@@ -3,7 +3,7 @@ replicaCount: 2
 image:
   repository: buldakovn/flask-app
   tag: "latest"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 imagePullSecrets: []
 nameOverride: ""
