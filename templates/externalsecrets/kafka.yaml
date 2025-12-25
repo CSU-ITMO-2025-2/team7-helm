@@ -1,0 +1,31 @@
+{{- if and .Values.externalSecret.enabled .Values.externalSecret.kafka.enabled }}
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: {{ include "flask-app.fullname" . }}-secret-kafka
+  namespace: {{ .Values.kafka.namespace | default "kafka" }}
+  labels:
+    {{- include "flask-app.labels" . | nindent 4 }}
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  refreshInterval: {{ .Values.externalSecret.refreshInterval }}
+  secretStoreRef:
+    name: {{ .Values.externalSecret.secretStore.name }}
+    kind: {{ .Values.externalSecret.secretStore.kind }}
+  target:
+    name: {{ .Values.kafka.credentialsSecretName }}
+    creationPolicy: Owner
+  data:
+    {{- range .Values.externalSecret.kafka.data }}
+    - secretKey: {{ .secretKey }}
+      remoteRef:
+        key: {{ .remoteRef.key }}
+        {{- if .remoteRef.property }}
+        property: {{ .remoteRef.property }}
+        {{- end }}
+        {{- if .remoteRef.version }}
+        version: {{ .remoteRef.version }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+

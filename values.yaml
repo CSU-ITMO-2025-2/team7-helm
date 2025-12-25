@@ -126,6 +126,19 @@ externalSecret:
         remoteRef:
           key: kv/data/team7/pgsql
           property: PG_PASSWORD
+  
+  # Секреты Kafka из Vault (kv/data/team7/kafka)
+  kafka:
+    enabled: true
+    data:
+      - secretKey: KAFKA_USERNAME  # Имя пользователя Kafka
+        remoteRef:
+          key: kv/data/team7/kafka  # Путь к секрету Kafka в Vault
+          property: KAFKA_USERNAME  # Свойство из секрета в Vault
+      - secretKey: KAFKA_PASSWORD  # Пароль пользователя Kafka (должно совпадать с kafka.users.producer.secretKey)
+        remoteRef:
+          key: kv/data/team7/kafka  # Путь к секрету Kafka в Vault
+          property: KAFKA_PASSWORD  # Свойство из секрета в Vault
 
 # Kafka configuration через Strimzi Operator
 # Требуется установленный Strimzi Operator в кластере
@@ -136,13 +149,18 @@ kafka:
   version: "3.6.0"  # Версия Kafka
   replicas: 1  # Количество брокеров Kafka
   minInSyncReplicas: 1  # Минимальное количество синхронизированных реплик
-  
+  offsetsTopicReplicationFactor: 1
+  transactionStateLogReplicationFactor: 1
+  defaultReplicationFactor: 1
+  minInSyncReplicas: 1
+  groups:
+    producer: "producer-group"
+    notification: "notification-group"
   # Внешние листенеры (опционально, для доступа извне кластера)
   externalListeners:
     enabled: false
     type: "nodeport"  # nodeport, loadbalancer, ingress
     tls: false
-  
   # Хранилище для Kafka
   storage:
     type: "ephemeral"  # ephemeral или persistent-claim
@@ -175,12 +193,23 @@ kafka:
   
   # Топики для создания
   topics:
-    - name: "flask-app-events"
-      partitions: 3
-      replicas: 1
-      config:
-        retention.ms: 86400000  # 7 дней
-        segment.ms: 86400000  # 1 день
+    name: "flask-app-events"
+    partitions: 3
+    replicas: 1
+    retentionMs: 86400000  # 7 дней
+    segmentBytes: 1073741824  # 1Gi
+  
+  # Конфигурация пользователей Kafka
+  users:
+    producer:
+      username: "flask-app-producer"  # Имя пользователя Kafka (также можно брать из секрета KAFKA_USERNAME)
+      secretKey: "KAFKA_PASSWORD"  # Ключ в секрете для пароля, должен совпадать с externalSecret.kafka.data[1].secretKey
+  
+  # Имя секрета с креденшелами Kafka (создается ExternalSecret)
+  credentialsSecretName: "flask-app-kafka-credentials"
+  
+  # Namespace для Kafka ресурсов
+  namespace: "kafka"
 
 # Конфигурация приложения для работы с Kafka
 app:

@@ -1,0 +1,96 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: controller
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  replicas: {{ .Values.kafka.replicas }}
+  roles:
+    - controller
+  resources:
+    requests:
+      memory: {{ .Values.kafka.resources.requests.memory }}
+      cpu: {{ .Values.kafka.resources.requests.cpu }}
+    limits:
+      memory: {{ .Values.kafka.resources.limits.memory }}
+      cpu: {{ .Values.kafka.resources.limits.cpu }}
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: ephemeral
+        kraftMetadata: shared
+---
+
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: broker
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  replicas: {{ .Values.kafka.replicas }}
+  roles:
+    - broker
+  resources:
+    requests:
+      memory: {{ .Values.kafka.resources.requests.memory }}
+      cpu: {{ .Values.kafka.resources.requests.cpu }}
+    limits:
+      memory: {{ .Values.kafka.resources.limits.memory }}
+      cpu: {{ .Values.kafka.resources.limits.cpu }}
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: ephemeral
+        kraftMetadata: shared
+---
+
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+    name: {{ .Values.kafka.clusterName }}
+    namespace: kafka
+    labels:
+      strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  kafka:
+    version: {{ .Values.kafka.version }}
+    authorization:
+      type: simple
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+        authentication:
+          type: scram-sha-512
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+    config:
+      offsets.topic.replication.factor: {{ .Values.kafka.offsetsTopicReplicationFactor }}
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      default.replication.factor: 3
+      min.insync.replicas: 2
+  entityOperator:
+    topicOperator: 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+    userOperator: 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
