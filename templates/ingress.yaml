@@ -21,18 +21,11 @@ spec:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
-          - path: /
+          - path: /hello
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-webui
+                name: {{ .Release.Name }}
                 port:
-                  number: 8080
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-app
-                port:
-                  number: 80
+                  number: 5000
 {{- end }}
