@@ -207,9 +207,6 @@ kafka:
   
   # Имя секрета с креденшелами Kafka (создается ExternalSecret)
   credentialsSecretName: "flask-app-kafka-credentials"
-  
-  # Namespace для Kafka ресурсов
-  namespace: "kafka"
 
 # Конфигурация приложения для работы с Kafka
 app:

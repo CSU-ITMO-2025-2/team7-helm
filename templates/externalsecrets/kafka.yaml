@@ -3,7 +3,7 @@ apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: {{ include "flask-app.fullname" . }}-secret-kafka
-  namespace: {{ .Values.kafka.namespace | default "kafka" }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "flask-app.labels" . | nindent 4 }}
     strimzi.io/cluster: {{ .Values.kafka.clusterName }}

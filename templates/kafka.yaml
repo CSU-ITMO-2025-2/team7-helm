@@ -1,57 +1,69 @@
-{{- if .Values.kafka.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: controller
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  replicas: 1
+  roles:
+    - controller
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 10Gi
+        class: s3-kafka
+        kraftMetadata: shared
+        deleteClaim: false
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: broker
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  replicas: 3
+  roles:
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 10Gi
+        class: s3-kafka
+        kraftMetadata: shared
+        deleteClaim: false
+---
 apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: {{ .Values.kafka.clusterName }}
-  labels:
-    {{- include "flask-app.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    strimzi.io/node-pools: enabled
 spec:
   kafka:
-    version: {{ .Values.kafka.version }}
-    replicas: {{ .Values.kafka.replicas }}
+    version: 4.1.1
+    metadataVersion: 4.1-IV1
     listeners:
       - name: plain
         port: 9092
         type: internal
         tls: false
-      {{- if .Values.kafka.externalListeners.enabled }}
-      - name: external
-        port: 9094
-        type: {{ .Values.kafka.externalListeners.type }}
-        tls: {{ .Values.kafka.externalListeners.tls }}
-      {{- end }}
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
     config:
-      offsets.topic.replication.factor: {{ .Values.kafka.replicas }}
-      transaction.state.log.replication.factor: {{ .Values.kafka.replicas }}
-      transaction.state.log.min.isr: {{ .Values.kafka.replicas }}
-      default.replication.factor: {{ .Values.kafka.replicas }}
-      min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}
-      inter.broker.protocol.version: {{ .Values.kafka.version }}
-      log.message.format.version: {{ .Values.kafka.version }}
-    storage:
-      type: {{ .Values.kafka.storage.type }}
-      {{- if eq .Values.kafka.storage.type "persistent-claim" }}
-      size: {{ .Values.kafka.storage.size }}
-      {{- if .Values.kafka.storage.class }}
-      class: {{ .Values.kafka.storage.class }}
-      {{- end }}
-      {{- end }}
-    resources:
-      {{- toYaml .Values.kafka.resources | nindent 6 }}
-  zookeeper:
-    replicas: {{ .Values.kafka.zookeeper.replicas }}
-    storage:
-      type: {{ .Values.kafka.zookeeper.storage.type }}
-      {{- if eq .Values.kafka.zookeeper.storage.type "persistent-claim" }}
-      size: {{ .Values.kafka.zookeeper.storage.size }}
-      {{- if .Values.kafka.zookeeper.storage.class }}
-      class: {{ .Values.kafka.zookeeper.storage.class }}
-      {{- end }}
-      {{- end }}
-    resources:
-      {{- toYaml .Values.kafka.zookeeper.resources | nindent 6 }}
+      default.replication.factor: 3
+      min.insync.replicas: 2
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
   entityOperator:
     topicOperator: {}
     userOperator: {}
-{{- end }}
-
