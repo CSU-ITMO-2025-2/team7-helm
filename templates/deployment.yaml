@@ -71,8 +71,14 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- if .Values.externalSecret.enabled }}
           envFrom:
+            {{- if and .Values.externalSecret.test.enabled }}
             - secretRef:
-                name: {{ include "flask-app.fullname" . }}-secret
+                name: {{ include "flask-app.fullname" . }}-secret-test
+            {{- end }}
+            {{- if and .Values.externalSecret.pgsql.enabled }}
+            - secretRef:
+                name: {{ include "flask-app.fullname" . }}-secret-pgsql
+            {{- end }}
           {{- end }}
           {{- if .Values.app.kafka.enabled }}
           env:
