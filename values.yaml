@@ -59,6 +59,10 @@ ingress:
   enabled: true
   host: team7.kubepractice.ru
   className: nginx
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: tls-secret
 
 resources:
   limits:
