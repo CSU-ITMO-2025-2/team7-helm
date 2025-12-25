@@ -24,6 +24,36 @@ service:
   type: ClusterIP
   port: 5000
 
+# Startup Probe - проверяет, что приложение запустилось
+# Используется для приложений с медленным стартом
+startupProbe:
+  enabled: true
+  path: /health/startup
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 30  # Максимум 5 минут на запуск (30 * 10 секунд)
+
+# Liveness Probe - проверяет, что приложение все еще работает
+# Если проверка не проходит, Kubernetes перезапускает контейнер
+livenessProbe:
+  enabled: true
+  path: /health/live
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Readiness Probe - проверяет, готово ли приложение принимать трафик
+# Если проверка не проходит, под удаляется из Service endpoints
+readinessProbe:
+  enabled: true
+  path: /health/ready
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
 ingress:
   enabled: false
   className: ""

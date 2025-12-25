@@ -279,10 +279,37 @@ argocd app sync flask-app
 ## Эндпоинты
 
 ### GET /healthcheck
-Проверка состояния приложения. Возвращает:
+Общий эндпоинт для проверки состояния приложения. Возвращает:
 ```json
 {
   "status": "ok"
+}
+```
+
+### GET /health/startup
+Эндпоинт для Startup Probe - проверяет, что приложение запустилось. Используется Kubernetes для определения готовности контейнера после запуска. Возвращает:
+```json
+{
+  "status": "ok",
+  "type": "startup"
+}
+```
+
+### GET /health/live
+Эндпоинт для Liveness Probe - проверяет, что приложение все еще работает. Если проверка не проходит, Kubernetes перезапускает контейнер. Возвращает:
+```json
+{
+  "status": "ok",
+  "type": "liveness"
+}
+```
+
+### GET /health/ready
+Эндпоинт для Readiness Probe - проверяет, готово ли приложение принимать трафик. Если проверка не проходит, под удаляется из Service endpoints. Возвращает:
+```json
+{
+  "status": "ok",
+  "type": "readiness"
 }
 ```
 
@@ -293,4 +320,14 @@ argocd app sync flask-app
   "message": "пливет"
 }
 ```
+
+## Kubernetes Probes
+
+Приложение настроено с тремя типами probes для мониторинга состояния:
+
+- **Startup Probe** - позволяет приложению медленно запускаться, не перезапуская его преждевременно
+- **Liveness Probe** - определяет, нужно ли перезапустить контейнер
+- **Readiness Probe** - определяет, готов ли контейнер принимать трафик
+
+Все probes настраиваются через `values.yaml` в секциях `startupProbe`, `livenessProbe` и `readinessProbe`.
 
