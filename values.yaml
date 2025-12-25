@@ -84,3 +84,30 @@ tolerations: []
 
 affinity: {}
 
+# External Secret configuration для интеграции с Vault
+# Требуется установленный External Secrets Operator в кластере
+# И настроенный SecretStore/ClusterSecretStore для подключения к Vault
+externalSecret:
+  enabled: true
+  refreshInterval: 1h  # Как часто обновлять секрет из Vault
+  secretStore:
+    name: vault-backend  # Имя SecretStore или ClusterSecretStore (должен быть создан отдельно)
+    kind: SecretStore  # SecretStore (namespace-scoped) или ClusterSecretStore (cluster-scoped)
+  # Маппинг секретов из Vault в Kubernetes Secret
+  # Каждый элемент определяет, какой ключ из Vault в какой ключ Secret записать
+  data:
+    # Вариант 1: Получить конкретное свойство из секрета
+    - secretKey: HELLO_MESSAGE  # Имя ключа в Kubernetes Secret (будет переменной окружения)
+      remoteRef:
+        key: /v1/kv/data/team7/test  # Путь к секрету в Vault (для KV v1) или secret/data/hello (для KV v2)
+        property: TEST_MESSAGE  # Конкретное свойство из секрета (опционально)
+    # Вариант 2: Получить весь секрет целиком (если property не указан)
+    # - secretKey: VAULT_SECRET_DATA
+    #   remoteRef:
+    #     key: secret/hello
+    # Можно добавить больше секретов:
+    # - secretKey: ANOTHER_SECRET
+    #   remoteRef:
+    #     key: secret/another
+    #     property: value
+

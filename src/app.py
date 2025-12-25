@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify
 
 app = Flask(__name__)
@@ -29,8 +30,17 @@ def readiness_check():
 
 @app.route('/hello', methods=['GET'])
 def hello():
-    """Эндпоинт, который возвращает приветствие"""
-    return jsonify({'message': 'пливет'}), 200
+    """Эндпоинт, который возвращает приветствие и данные из Vault через ExternalSecret"""
+    # Получаем значение из переменной окружения, которая берется из Kubernetes Secret
+    # Secret создается External Secrets Operator из Vault
+    hello_message = os.getenv('HELLO_MESSAGE', 'Секрет не найден')
+    
+    response = {
+        'vault_secret': hello_message,
+        'secret_source': 'ExternalSecret -> Kubernetes Secret -> Environment Variable'
+    }
+    
+    return jsonify(response), 200
 
 
 if __name__ == '__main__':
