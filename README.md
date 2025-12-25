@@ -218,20 +218,75 @@ git push
 kubectl get namespace argocd
 ```
 
-2. **Отредактируйте argocd-application.yaml**:
+2. **Настройте Ingress для отображения URLs в ArgoCD**:
+   
+   ArgoCD автоматически определяет URLs из Ingress ресурсов. Обновите `values.yaml`:
+   ```yaml
+   ingress:
+     enabled: true
+     className: "nginx"  # или ваш ingress controller
+     hosts:
+       - host: flask-app.yourdomain.com  # Замените на ваш домен
+         paths:
+           - path: /
+             pathType: Prefix
+   ```
+
+3. **Отредактируйте argocd-application.yaml**:
    - Замените `YOUR_USERNAME` и `YOUR_REPO_NAME` на реальные значения
    - При необходимости измените `namespace` для развертывания
    - Настройте `targetRevision` (main, master, или другая ветка)
 
-3. **Примените Application манифест**:
+4. **Примените Application манифест**:
 ```bash
 kubectl apply -f argocd-application.yaml
 ```
 
-4. **Проверьте статус в ArgoCD UI**:
+5. **Проверьте статус в ArgoCD UI**:
    - Откройте ArgoCD UI (обычно через port-forward или ingress)
    - Найдите приложение `flask-app`
    - Убедитесь, что синхронизация прошла успешно
+   - **URLs должны автоматически появиться** в интерфейсе ArgoCD, если Ingress включен и настроен
+
+### Отображение URLs в ArgoCD
+
+ArgoCD автоматически определяет и отображает URLs из следующих ресурсов:
+
+- **Ingress** - самый распространенный способ (рекомендуется)
+- **Service типа LoadBalancer** - показывает external IP
+- **Service типа NodePort** - показывает node IP:port
+
+**Для отображения URLs:**
+
+1. **Включите Ingress** в `values.yaml`:
+   ```yaml
+   ingress:
+     enabled: true
+     className: "nginx"  # Укажите ваш ingress controller
+     hosts:
+       - host: flask-app.yourdomain.com
+         paths:
+           - path: /
+             pathType: Prefix
+   ```
+
+2. **Убедитесь, что Ingress Controller установлен** в кластере:
+   ```bash
+   kubectl get ingressclass
+   ```
+
+3. **После синхронизации в ArgoCD**, URLs появятся автоматически в UI приложения.
+
+**Альтернатива: LoadBalancer Service**
+
+Если не используете Ingress, можно использовать LoadBalancer:
+```yaml
+service:
+  type: LoadBalancer
+  port: 5000
+```
+
+ArgoCD автоматически покажет external IP в интерфейсе.
 
 ### Шаг 4: Проверка развертывания
 

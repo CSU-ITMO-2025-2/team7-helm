@@ -1,42 +1,30 @@
-{{- if .Values.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "flask-app.fullname" . }}
-  labels:
-    {{- include "flask-app.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+  labels:
+    app.kubernetes.io/instance: team7-app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: team7-app
+    app.kubernetes.io/version: 1.0.0
+    helm.sh/chart: team7-app
+  name: team7-app
+  namespace: demo
 spec:
-  {{- if .Values.ingress.className }}
-  ingressClassName: {{ .Values.ingress.className }}
-  {{- end }}
-  {{- if .Values.ingress.tls }}
-  tls:
-    {{- range .Values.ingress.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
-  {{- end }}
+  ingressClassName: nginx
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: demo.kubepractice.ru
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            pathType: {{ .pathType }}
-            backend:
+          - backend:
               service:
-                name: {{ include "flask-app.fullname" $ }}
+                name: team7-app
                 port:
-                  number: {{ $.Values.service.port }}
-          {{- end }}
-    {{- end }}
-{{- end }}
-
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - demo.kubepractice.ru
+      secretName: tls-secret
