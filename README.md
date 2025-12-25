@@ -24,7 +24,7 @@ python src/app.py
 ### Сборка образа
 
 ```bash
-docker build -t flask-app .
+docker build -t flask-app -f src/Dockerfile src/
 ```
 
 ### Запуск контейнера
@@ -93,12 +93,17 @@ git push -u origin main
 
 ### Шаг 2: Сборка и публикация Docker образа
 
+> 📖 **Подробные инструкции для разных registry:** см. [DOCKER_REGISTRY.md](DOCKER_REGISTRY.md)
+
 1. **Соберите Docker образ**:
 ```bash
-docker build -t flask-app:latest .
+docker build -t flask-app:latest -f src/Dockerfile src/
 ```
 
-2. **Загрузите образ в Docker Hub или другой registry**:
+2. **Загрузите образ в registry** (выберите один из вариантов):
+
+#### Вариант A: Docker Hub
+
 ```bash
 # Войдите в Docker Hub
 docker login
@@ -110,12 +115,94 @@ docker tag flask-app:latest YOUR_USERNAME/flask-app:latest
 docker push YOUR_USERNAME/flask-app:latest
 ```
 
-3. **Обновите values.yaml** с правильным именем образа:
+В `values.yaml` укажите:
 ```yaml
 image:
   repository: YOUR_USERNAME/flask-app
   tag: "latest"
 ```
+
+#### Вариант B: GitHub Container Registry (ghcr.io)
+
+```bash
+# Войдите в GitHub Container Registry
+# Создайте Personal Access Token (PAT) с правами write:packages
+# Затем выполните:
+echo $GITHUB_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+
+# Тегируйте образ
+docker tag flask-app:latest ghcr.io/YOUR_GITHUB_USERNAME/flask-app:latest
+
+# Загрузите образ
+docker push ghcr.io/YOUR_GITHUB_USERNAME/flask-app:latest
+```
+
+В `values.yaml` укажите:
+```yaml
+image:
+  repository: ghcr.io/YOUR_GITHUB_USERNAME/flask-app
+  tag: "latest"
+  pullPolicy: IfNotPresent
+```
+
+**Важно:** Для Kubernetes нужен `imagePullSecrets`, если registry приватный:
+```bash
+# Создайте secret для GitHub Container Registry
+kubectl create secret docker-registry ghcr-secret \
+  --docker-server=ghcr.io \
+  --docker-username=YOUR_GITHUB_USERNAME \
+  --docker-password=YOUR_GITHUB_TOKEN \
+  --docker-email=YOUR_EMAIL \
+  --namespace=default
+```
+
+Затем в `values.yaml` добавьте:
+```yaml
+imagePullSecrets:
+  - name: ghcr-secret
+```
+
+#### Вариант C: GitLab Container Registry
+
+```bash
+# Войдите в GitLab Container Registry
+docker login registry.gitlab.com
+
+# Тегируйте образ
+docker tag flask-app:latest registry.gitlab.com/YOUR_GROUP/YOUR_PROJECT/flask-app:latest
+
+# Загрузите образ
+docker push registry.gitlab.com/YOUR_GROUP/YOUR_PROJECT/flask-app:latest
+```
+
+В `values.yaml` укажите:
+```yaml
+image:
+  repository: registry.gitlab.com/YOUR_GROUP/YOUR_PROJECT/flask-app
+  tag: "latest"
+```
+
+#### Вариант D: Приватный registry (например, Harbor, Nexus)
+
+```bash
+# Войдите в ваш registry
+docker login YOUR_REGISTRY_URL
+
+# Тегируйте образ
+docker tag flask-app:latest YOUR_REGISTRY_URL/YOUR_PROJECT/flask-app:latest
+
+# Загрузите образ
+docker push YOUR_REGISTRY_URL/YOUR_PROJECT/flask-app:latest
+```
+
+В `values.yaml` укажите:
+```yaml
+image:
+  repository: YOUR_REGISTRY_URL/YOUR_PROJECT/flask-app
+  tag: "latest"
+```
+
+3. **Обновите values.yaml** с правильным именем образа (см. примеры выше)
 
 4. **Закоммитьте изменения**:
 ```bash
@@ -167,7 +254,7 @@ kubectl logs -l app.kubernetes.io/name=flask-app
 
 2. **Соберите и загрузите новый образ**:
 ```bash
-docker build -t YOUR_USERNAME/flask-app:v0.1.1 .
+docker build -t YOUR_USERNAME/flask-app:v0.1.1 -f src/Dockerfile src/
 docker push YOUR_USERNAME/flask-app:v0.1.1
 ```
 

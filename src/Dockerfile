@@ -1,15 +1,15 @@
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
 WORKDIR /app
 
 # Копируем файл зависимостей
-COPY src/requirements.txt .
+COPY requirements.txt .
 
 # Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем код приложения
-COPY src/ .
+COPY . .
 
 # Открываем порт
 EXPOSE 5000

@@ -1,9 +1,9 @@
 replicaCount: 2
 
 image:
-  repository: flask-app
-  pullPolicy: IfNotPresent
+  repository: buldakovn/flask-app
   tag: "latest"
+  pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 nameOverride: ""
