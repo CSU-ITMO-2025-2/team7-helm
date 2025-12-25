@@ -2,11 +2,16 @@ import os
 import json
 import time
 import threading
+import psycopg2
+from psycopg2 import pool
 from flask import Flask, jsonify, request
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import KafkaError
 
 app = Flask(__name__)
+
+# Пул подключений к PostgreSQL
+postgres_pool = None
 
 # Инициализация Kafka Producer
 kafka_producer = None
@@ -72,9 +77,43 @@ def init_kafka():
         kafka_producer = None
         kafka_consumer = None
 
+# Инициализация подключения к PostgreSQL
+def init_postgres():
+    """Инициализация пула подключений к PostgreSQL"""
+    global postgres_pool
+    
+    pg_host = os.getenv('PG_HOST')
+    pg_port = os.getenv('PG_PORT', '5432')
+    pg_database = os.getenv('PG_DATABASE')
+    pg_user = os.getenv('PG_USER')
+    pg_password = os.getenv('PG_PASSWORD')
+    
+    if not all([pg_host, pg_database, pg_user, pg_password]):
+        app.logger.warning("Не все параметры подключения к PostgreSQL настроены")
+        return
+    
+    try:
+        postgres_pool = psycopg2.pool.SimpleConnectionPool(
+            1,  # Минимальное количество подключений
+            5,  # Максимальное количество подключений
+            host=pg_host,
+            port=pg_port,
+            database=pg_database,
+            user=pg_user,
+            password=pg_password
+        )
+        app.logger.info(f"Пул подключений к PostgreSQL инициализирован: {pg_host}:{pg_port}/{pg_database}")
+    except Exception as e:
+        app.logger.error(f"Ошибка инициализации подключения к PostgreSQL: {e}")
+        postgres_pool = None
+
+
 # Инициализация Kafka при старте приложения
 if os.getenv('KAFKA_BOOTSTRAP_SERVERS'):
     init_kafka()
+
+# Инициализация PostgreSQL при старте приложения
+init_postgres()
 
 
 @app.route('/healthcheck', methods=['GET'])
@@ -171,6 +210,76 @@ def kafka_status():
         'consumer_group': os.getenv('KAFKA_CONSUMER_GROUP', 'не настроено'),
         'messages_received': len(received_messages)
     }), 200
+
+
+@app.route('/db/status', methods=['GET'])
+def db_status():
+    """Проверка подключения к базе данных PostgreSQL"""
+    if not postgres_pool:
+        return jsonify({
+            'status': 'error',
+            'connected': False,
+            'message': 'Пул подключений к PostgreSQL не инициализирован',
+            'config': {
+                'host': os.getenv('PG_HOST', 'не настроено'),
+                'port': os.getenv('PG_PORT', 'не настроено'),
+                'database': os.getenv('PG_DATABASE', 'не настроено'),
+                'user': os.getenv('PG_USER', 'не настроено'),
+                'password_set': bool(os.getenv('PG_PASSWORD'))
+            }
+        }), 503
+    
+    try:
+        # Получаем подключение из пула
+        conn = postgres_pool.getconn()
+        if conn:
+            try:
+                # Выполняем простой запрос для проверки подключения
+                cursor = conn.cursor()
+                cursor.execute('SELECT version();')
+                version = cursor.fetchone()[0]
+                cursor.close()
+                
+                # Возвращаем подключение в пул
+                postgres_pool.putconn(conn)
+                
+                return jsonify({
+                    'status': 'success',
+                    'connected': True,
+                    'message': 'Успешное подключение к PostgreSQL',
+                    'postgres_version': version,
+                    'config': {
+                        'host': os.getenv('PG_HOST'),
+                        'port': os.getenv('PG_PORT', '5432'),
+                        'database': os.getenv('PG_DATABASE'),
+                        'user': os.getenv('PG_USER')
+                    }
+                }), 200
+            except Exception as e:
+                # Возвращаем подключение в пул даже при ошибке
+                postgres_pool.putconn(conn)
+                raise e
+    except psycopg2.Error as e:
+        app.logger.error(f"Ошибка подключения к PostgreSQL: {e}")
+        return jsonify({
+            'status': 'error',
+            'connected': False,
+            'message': f'Ошибка подключения к PostgreSQL: {str(e)}',
+            'error_code': e.pgcode if hasattr(e, 'pgcode') else None,
+            'config': {
+                'host': os.getenv('PG_HOST', 'не настроено'),
+                'port': os.getenv('PG_PORT', 'не настроено'),
+                'database': os.getenv('PG_DATABASE', 'не настроено'),
+                'user': os.getenv('PG_USER', 'не настроено')
+            }
+        }), 500
+    except Exception as e:
+        app.logger.error(f"Неожиданная ошибка при проверке PostgreSQL: {e}")
+        return jsonify({
+            'status': 'error',
+            'connected': False,
+            'message': f'Неожиданная ошибка: {str(e)}'
+        }), 500
 
 
 if __name__ == '__main__':

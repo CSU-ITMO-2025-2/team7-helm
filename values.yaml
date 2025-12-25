@@ -101,15 +101,31 @@ externalSecret:
       remoteRef:
         key: kv/data/team7/test  # Путь к секрету в Vault (для KV v1) или secret/data/hello (для KV v2)
         property: TEST_MESSAGE  # Конкретное свойство из секрета (опционально)
+    # Секреты PostgreSQL из Vault
+    - secretKey: PG_HOST
+      remoteRef:
+        key: kv/data/team7/pgsql   # Путь к секрету PostgreSQL в Vault
+        property: PG_HOST
+    - secretKey: PG_PORT
+      remoteRef:
+        key: kv/data/team7/pgsql 
+        property: PG_PORT
+    - secretKey: PG_DATABASE
+      remoteRef:
+        key: kv/data/team7/pgsql 
+        property: PG_DATABASE
+    - secretKey: PG_USER
+      remoteRef:
+        key: kv/data/team7/pgsql 
+        property: PG_USER
+    - secretKey: PG_PASSWORD
+      remoteRef:
+        key: kv/data/team7/pgsql 
+        property: PG_PASSWORD
     # Вариант 2: Получить весь секрет целиком (если property не указан)
     # - secretKey: VAULT_SECRET_DATA
     #   remoteRef:
     #     key: secret/hello
-    # Можно добавить больше секретов:
-    # - secretKey: ANOTHER_SECRET
-    #   remoteRef:
-    #     key: secret/another
-    #     property: value
 
 # Kafka configuration через Strimzi Operator
 # Требуется установленный Strimzi Operator в кластере
