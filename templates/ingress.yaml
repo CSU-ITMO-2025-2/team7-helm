@@ -1,39 +1,30 @@
-{{- if .Values.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-ingress
   annotations:
-    kubernetes.io/ingress.class: {{ .Values.ingress.className | default "nginx" }}
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
-    {{- if and .Values.ingress.tls .Values.ingress.tls.enabled }}
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    {{- end }}
-    # ArgoCD аннотации для отображения URLs
-    argocd.argoproj.io/refresh: normal
-    {{- with .Values.ingress.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+  labels:
+    app.kubernetes.io/instance: {{ include "flask-app.fullname" . }}
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: {{ include "flask-app.name" . }}
+    app.kubernetes.io/version: 1.0.0
+    helm.sh/chart: {{ include "flask-app.chart" . }}
+  name: {{ include "flask-app.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 spec:
-  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
-  {{- if and .Values.ingress.tls .Values.ingress.tls.enabled }}
-  tls:
-    - hosts:
-        - {{ .Values.ingress.host }}
-      secretName: {{ .Values.ingress.tls.secretName | default "tls-secret" }}
-  {{- end }}
+  ingressClassName: nginx
   rules:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
-          - path: /hello
-            pathType: Prefix
-            backend:
+          - backend:
               service:
                 name: {{ include "flask-app.fullname" . }}
                 port:
-                  number: {{ .Values.service.port }}
-{{- end }}
+                  number: 5000
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: tls-secret
