@@ -111,3 +111,68 @@ externalSecret:
     #     key: secret/another
     #     property: value
 
+# Kafka configuration через Strimzi Operator
+# Требуется установленный Strimzi Operator в кластере
+# Установка: kubectl apply -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+kafka:
+  enabled: true
+  clusterName: "flask-app-kafka"  # Имя кластера Kafka
+  version: "3.6.0"  # Версия Kafka
+  replicas: 1  # Количество брокеров Kafka
+  minInSyncReplicas: 1  # Минимальное количество синхронизированных реплик
+  
+  # Внешние листенеры (опционально, для доступа извне кластера)
+  externalListeners:
+    enabled: false
+    type: "nodeport"  # nodeport, loadbalancer, ingress
+    tls: false
+  
+  # Хранилище для Kafka
+  storage:
+    type: "ephemeral"  # ephemeral или persistent-claim
+    size: "10Gi"  # Используется только для persistent-claim
+    class: ""  # Storage class (опционально)
+  
+  # Ресурсы для Kafka брокеров
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  
+  # Конфигурация Zookeeper
+  zookeeper:
+    replicas: 1
+    storage:
+      type: "persistent-claim"  # ephemeral или persistent-claim
+      size: "10Gi"  # Используется только для persistent-claim
+      class: ""  # Storage class (опционально)
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+  
+  # Топики для создания
+  topics:
+    - name: "flask-app-events"
+      partitions: 3
+      replicas: 1
+      config:
+        retention.ms: 86400000  # 7 дней
+        segment.ms: 86400000  # 1 день
+
+# Конфигурация приложения для работы с Kafka
+app:
+  kafka:
+    enabled: true
+    # Имя сервиса Kafka в Strimzi формируется как <cluster-name>-kafka-bootstrap:9092
+    # Например, если clusterName = flask-app-kafka, то сервис будет flask-app-kafka-kafka-bootstrap:9092
+    bootstrapServers: ""  # Оставьте пустым для автоматического определения, или укажите явно
+    topic: "flask-app-events"  # Топик по умолчанию
+    consumerGroup: "flask-app-consumer"  # Consumer group ID
+

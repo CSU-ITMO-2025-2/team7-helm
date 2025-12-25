@@ -74,6 +74,21 @@ spec:
             - secretRef:
                 name: {{ include "flask-app.fullname" . }}-secret
           {{- end }}
+          {{- if .Values.app.kafka.enabled }}
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              {{- if .Values.app.kafka.bootstrapServers }}
+              value: {{ .Values.app.kafka.bootstrapServers | quote }}
+              {{- else if .Values.kafka.enabled }}
+              value: {{ printf "%s-kafka-bootstrap:9092" .Values.kafka.clusterName | quote }}
+              {{- else }}
+              value: "localhost:9092"
+              {{- end }}
+            - name: KAFKA_TOPIC
+              value: {{ .Values.app.kafka.topic | quote }}
+            - name: KAFKA_CONSUMER_GROUP
+              value: {{ .Values.app.kafka.consumerGroup | quote }}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

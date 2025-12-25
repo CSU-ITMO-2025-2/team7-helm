@@ -1,0 +1,57 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: {{ .Values.kafka.clusterName }}
+  labels:
+    {{- include "flask-app.labels" . | nindent 4 }}
+spec:
+  kafka:
+    version: {{ .Values.kafka.version }}
+    replicas: {{ .Values.kafka.replicas }}
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      {{- if .Values.kafka.externalListeners.enabled }}
+      - name: external
+        port: 9094
+        type: {{ .Values.kafka.externalListeners.type }}
+        tls: {{ .Values.kafka.externalListeners.tls }}
+      {{- end }}
+    config:
+      offsets.topic.replication.factor: {{ .Values.kafka.replicas }}
+      transaction.state.log.replication.factor: {{ .Values.kafka.replicas }}
+      transaction.state.log.min.isr: {{ .Values.kafka.replicas }}
+      default.replication.factor: {{ .Values.kafka.replicas }}
+      min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}
+      inter.broker.protocol.version: {{ .Values.kafka.version }}
+      log.message.format.version: {{ .Values.kafka.version }}
+    storage:
+      type: {{ .Values.kafka.storage.type }}
+      {{- if eq .Values.kafka.storage.type "persistent-claim" }}
+      size: {{ .Values.kafka.storage.size }}
+      {{- if .Values.kafka.storage.class }}
+      class: {{ .Values.kafka.storage.class }}
+      {{- end }}
+      {{- end }}
+    resources:
+      {{- toYaml .Values.kafka.resources | nindent 6 }}
+  zookeeper:
+    replicas: {{ .Values.kafka.zookeeper.replicas }}
+    storage:
+      type: {{ .Values.kafka.zookeeper.storage.type }}
+      {{- if eq .Values.kafka.zookeeper.storage.type "persistent-claim" }}
+      size: {{ .Values.kafka.zookeeper.storage.size }}
+      {{- if .Values.kafka.zookeeper.storage.class }}
+      class: {{ .Values.kafka.zookeeper.storage.class }}
+      {{- end }}
+      {{- end }}
+    resources:
+      {{- toYaml .Values.kafka.zookeeper.resources | nindent 6 }}
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+{{- end }}
+
