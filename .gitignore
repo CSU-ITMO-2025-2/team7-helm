@@ -29,3 +29,5 @@ Thumbs.db
 # Logs
 *.log
 
+team7-kubeconfig.yaml
+.gitignore

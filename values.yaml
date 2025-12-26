@@ -145,7 +145,7 @@ externalSecret:
 # Установка: kubectl apply -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 kafka:
   enabled: true
-  clusterName: "flask-app-kafka"  # Имя кластера Kafka
+  clusterName: "my-cluster"  # Имя кластера Kafka
   version: "3.6.0"  # Версия Kafka
   replicas: 1  # Количество брокеров Kafka
   minInSyncReplicas: 1  # Минимальное количество синхронизированных реплик
