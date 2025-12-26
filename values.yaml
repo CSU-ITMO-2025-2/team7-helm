@@ -146,7 +146,7 @@ externalSecret:
 kafka:
   enabled: true
   clusterName: "my-cluster"  # Имя кластера Kafka
-  version: "3.6.0"  # Версия Kafka
+  version: "4.1.1"  # Версия Kafka
   replicas: 1  # Количество брокеров Kafka
   minInSyncReplicas: 1  # Минимальное количество синхронизированных реплик
   offsetsTopicReplicationFactor: 1
