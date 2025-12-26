@@ -185,14 +185,14 @@ kafka:
       cpu: 500m
       memory: 2Gi
   # Дополнительные настройки Kafka
-  logRetentionMs: 86400000  # Время хранения логов (7 дней)
+  logRetentionMs: 86400000  # Время хранения логов (1 день)
   logSegmentBytes: 1073741824  # Размер сегмента лога (1Gi)
   # Топики для создания
   topics:
     name: "flask-app-events"
     partitions: 3
     replicas: 1
-    retentionMs: 86400000  # 7 дней
+    retentionMs: 86400000  # 1 день
     segmentBytes: 1073741824  # 1Gi
 
 # Конфигурация приложения для работы с Kafka

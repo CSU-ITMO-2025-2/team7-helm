@@ -48,8 +48,8 @@ spec:
             --topic {{ .Values.kafka.topics.name }} \
             --partitions {{ .Values.kafka.topics.partitions }} \
             --replication-factor {{ .Values.kafka.topics.replicas }} \
-            --config retention.ms={{ .Values.kafka.topics.retentionMs }} \
-            --config segment.bytes={{ .Values.kafka.topics.segmentBytes }} \
+            --config retention.ms={{ printf "%d" .Values.kafka.topics.retentionMs }} \
+            --config segment.bytes={{ printf "%d" .Values.kafka.topics.segmentBytes }} \
             --if-not-exists || echo "Topic already exists or creation failed"
           echo "Topics created successfully"
 {{- end }}

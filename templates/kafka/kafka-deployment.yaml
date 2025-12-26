@@ -61,11 +61,11 @@ spec:
           value: "{{ .Values.kafka.minInSyncReplicas | toString }}"
         {{- if .Values.kafka.logRetentionMs }}
         - name: KAFKA_LOG_RETENTION_MS
-          value: "{{ .Values.kafka.logRetentionMs | toString }}"
+          value: "{{ printf "%d" .Values.kafka.logRetentionMs }}"
         {{- end }}
         {{- if .Values.kafka.logSegmentBytes }}
         - name: KAFKA_LOG_SEGMENT_BYTES
-          value: "{{ .Values.kafka.logSegmentBytes | toString }}"
+          value: "{{ printf "%d" .Values.kafka.logSegmentBytes }}"
         {{- end }}
         resources:
           {{- toYaml .Values.kafka.resources | nindent 10 }}
