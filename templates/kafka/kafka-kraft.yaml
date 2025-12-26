@@ -1,21 +1,52 @@
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
-  name: dual-role
+  name: controller
+  namespace: {{ .Release.Namespace }}
   labels:
     strimzi.io/cluster: my-cluster
 spec:
-  replicas: 1
+  replicas: 3
   roles:
     - controller
-    - broker
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: "150m"
+    limits:
+      memory: 512Mi
+      cpu: "200m"
   storage:
     type: jbod
     volumes:
       - id: 0
-        type: persistent-claim
-        size: 100Gi
-        deleteClaim: false
+        type: ephemeral
+        kraftMetadata: shared
+---
+
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: broker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  replicas: 3
+  roles:
+    - broker
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: "100m"
+    limits:
+      memory: 1Gi
+      cpu: "200m"
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: ephemeral
         kraftMetadata: shared
 ---
 
@@ -23,25 +54,45 @@ apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: my-cluster
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: my-cluster
 spec:
   kafka:
     version: 4.1.1
-    metadataVersion: 4.1-IV1
+    authorization:
+      type: simple
     listeners:
       - name: plain
         port: 9092
         type: internal
         tls: false
+        authentication:
+          type: scram-sha-512
       - name: tls
         port: 9093
         type: internal
         tls: true
     config:
-      offsets.topic.replication.factor: 1
-      transaction.state.log.replication.factor: 1
-      transaction.state.log.min.isr: 1
-      default.replication.factor: 1
-      min.insync.replicas: 1
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      default.replication.factor: 3
+      min.insync.replicas: 2
   entityOperator:
-    topicOperator: {}
-    userOperator: {}
+    topicOperator: 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+    userOperator: 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
