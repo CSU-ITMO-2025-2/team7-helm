@@ -1,3 +1,4 @@
+{{- if .Values.kafka.enabled }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
@@ -94,3 +95,4 @@ spec:
         limits:
           cpu: 200m
           memory: 512Mi
+{{- end }}
