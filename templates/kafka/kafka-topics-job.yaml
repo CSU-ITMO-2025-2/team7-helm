@@ -38,7 +38,7 @@ spec:
           BOOTSTRAP_SERVER="${KAFKA_HOST}:${KAFKA_PORT}"
           
           echo "Waiting for Kafka to be ready..."
-          MAX_RETRIES=60
+          MAX_RETRIES=5
           RETRY_COUNT=0
           SUCCESS=0
           
