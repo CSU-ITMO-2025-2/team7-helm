@@ -139,6 +139,27 @@ externalSecret:
         remoteRef:
           key: kv/data/team7/kafka  # Путь к секрету Kafka в Vault
           property: KAFKA_PASSWORD  # Свойство из секрета в Vault
+  
+  # Секреты S3 из Vault (kv/data/team7/s3)
+  s3:
+    enabled: true
+    data:
+      - secretKey: AWS_ACCESS_KEY_ID  # Access Key ID для S3
+        remoteRef:
+          key: kv/data/team7/s3  # Путь к секрету S3 в Vault
+          property: AWS_ACCESS_KEY_ID  # Свойство из секрета в Vault
+      - secretKey: AWS_SECRET_ACCESS_KEY  # Secret Access Key для S3
+        remoteRef:
+          key: kv/data/team7/s3  # Путь к секрету S3 в Vault
+          property: AWS_SECRET_ACCESS_KEY  # Свойство из секрета в Vault
+      - secretKey: AWS_REGION  # Регион S3
+        remoteRef:
+          key: kv/data/team7/s3  # Путь к секрету S3 в Vault
+          property: AWS_REGION  # Свойство из секрета в Vault
+      - secretKey: AWS_ENDPOINT_URL  # Endpoint URL для S3-совместимых хранилищ (опционально)
+        remoteRef:
+          key: kv/data/team7/s3  # Путь к секрету S3 в Vault
+          property: AWS_ENDPOINT_URL  # Свойство из секрета в Vault
 
 # Kafka configuration через Strimzi Operator
 # Требуется установленный Strimzi Operator в кластере

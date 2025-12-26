@@ -7,6 +7,8 @@ from psycopg2 import pool
 from flask import Flask, jsonify, request
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import KafkaError
+import boto3
+from botocore.exceptions import ClientError, NoCredentialsError
 
 app = Flask(__name__)
 
@@ -18,6 +20,9 @@ kafka_producer = None
 kafka_consumer = None
 consumer_thread = None
 received_messages = []
+
+# Инициализация S3 клиента
+s3_client = None
 
 def init_kafka():
     """Инициализация Kafka Producer и Consumer"""
@@ -114,6 +119,39 @@ if os.getenv('KAFKA_BOOTSTRAP_SERVERS'):
 
 # Инициализация PostgreSQL при старте приложения
 init_postgres()
+
+# Инициализация S3 клиента
+def init_s3():
+    """Инициализация S3 клиента"""
+    global s3_client
+    
+    aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+    aws_region = os.getenv('AWS_REGION', 'us-east-1')
+    aws_endpoint_url = os.getenv('AWS_ENDPOINT_URL')  # Опционально, для S3-совместимых хранилищ
+    
+    if not aws_access_key_id or not aws_secret_access_key:
+        app.logger.warning("Не все параметры подключения к S3 настроены")
+        return
+    
+    try:
+        s3_config = {
+            'aws_access_key_id': aws_access_key_id,
+            'aws_secret_access_key': aws_secret_access_key,
+            'region_name': aws_region
+        }
+        
+        if aws_endpoint_url:
+            s3_config['endpoint_url'] = aws_endpoint_url
+        
+        s3_client = boto3.client('s3', **s3_config)
+        app.logger.info(f"S3 клиент инициализирован: region={aws_region}, endpoint={aws_endpoint_url or 'default'}")
+    except Exception as e:
+        app.logger.error(f"Ошибка инициализации S3 клиента: {e}")
+        s3_client = None
+
+# Инициализация S3 при старте приложения
+init_s3()
 
 
 @app.route('/healthcheck', methods=['GET'])
@@ -275,6 +313,76 @@ def db_status():
         }), 500
     except Exception as e:
         app.logger.error(f"Неожиданная ошибка при проверке PostgreSQL: {e}")
+        return jsonify({
+            'status': 'error',
+            'connected': False,
+            'message': f'Неожиданная ошибка: {str(e)}'
+        }), 500
+
+
+@app.route('/s3/status', methods=['GET'])
+def s3_status():
+    """Проверка подключения к S3"""
+    if not s3_client:
+        return jsonify({
+            'status': 'error',
+            'connected': False,
+            'message': 'S3 клиент не инициализирован',
+            'config': {
+                'region': os.getenv('AWS_REGION', 'не настроено'),
+                'endpoint_url': os.getenv('AWS_ENDPOINT_URL', 'не настроено'),
+                'access_key_id_set': bool(os.getenv('AWS_ACCESS_KEY_ID')),
+                'secret_access_key_set': bool(os.getenv('AWS_SECRET_ACCESS_KEY'))
+            }
+        }), 503
+    
+    try:
+        # Пытаемся получить список бакетов для проверки подключения
+        # Это простая операция, которая требует валидных креденшелов
+        response = s3_client.list_buckets()
+        buckets_count = len(response.get('Buckets', []))
+        
+        return jsonify({
+            'status': 'success',
+            'connected': True,
+            'message': 'Успешное подключение к S3',
+            'buckets_count': buckets_count,
+            'config': {
+                'region': os.getenv('AWS_REGION', 'us-east-1'),
+                'endpoint_url': os.getenv('AWS_ENDPOINT_URL', 'default'),
+                'access_key_id': os.getenv('AWS_ACCESS_KEY_ID', '')[:10] + '...' if os.getenv('AWS_ACCESS_KEY_ID') else 'не настроено'
+            }
+        }), 200
+    except NoCredentialsError as e:
+        app.logger.error(f"Ошибка аутентификации S3: {e}")
+        return jsonify({
+            'status': 'error',
+            'connected': False,
+            'message': f'Ошибка аутентификации S3: {str(e)}',
+            'error_type': 'NoCredentialsError',
+            'config': {
+                'region': os.getenv('AWS_REGION', 'не настроено'),
+                'endpoint_url': os.getenv('AWS_ENDPOINT_URL', 'не настроено'),
+                'access_key_id_set': bool(os.getenv('AWS_ACCESS_KEY_ID')),
+                'secret_access_key_set': bool(os.getenv('AWS_SECRET_ACCESS_KEY'))
+            }
+        }), 401
+    except ClientError as e:
+        app.logger.error(f"Ошибка клиента S3: {e}")
+        error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+        return jsonify({
+            'status': 'error',
+            'connected': False,
+            'message': f'Ошибка S3: {str(e)}',
+            'error_type': 'ClientError',
+            'error_code': error_code,
+            'config': {
+                'region': os.getenv('AWS_REGION', 'не настроено'),
+                'endpoint_url': os.getenv('AWS_ENDPOINT_URL', 'не настроено')
+            }
+        }), 500
+    except Exception as e:
+        app.logger.error(f"Неожиданная ошибка при проверке S3: {e}")
         return jsonify({
             'status': 'error',
             'connected': False,

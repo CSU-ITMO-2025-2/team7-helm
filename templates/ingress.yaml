@@ -38,6 +38,13 @@ spec:
                 name: {{ include "flask-app.fullname" . }}
                 port:
                   number: 5000
+          - path: /s3/status
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "flask-app.fullname" . }}
+                port:
+                  number: 5000
 
   tls:
     - hosts:

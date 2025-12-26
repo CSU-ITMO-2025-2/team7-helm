@@ -79,6 +79,10 @@ spec:
             - secretRef:
                 name: {{ include "flask-app.fullname" . }}-secret-pgsql
             {{- end }}
+            {{- if and .Values.externalSecret.s3.enabled }}
+            - secretRef:
+                name: {{ include "flask-app.fullname" . }}-secret-s3
+            {{- end }}
           {{- end }}
           {{- if .Values.app.kafka.enabled }}
           env:
