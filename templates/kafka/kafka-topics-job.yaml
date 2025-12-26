@@ -1,0 +1,56 @@
+{{- if and .Values.kafka.enabled .Values.kafka.topics }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "flask-app.fullname" . }}-create-kafka-topics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "flask-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: kafka-topics
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "flask-app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: kafka-topics
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: kafka-topics
+        image: {{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag }}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Waiting for Kafka to be ready..."
+          MAX_RETRIES=30
+          RETRY_COUNT=0
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if kafka-broker-api-versions.sh --bootstrap-server {{ include "flask-app.fullname" . }}-kafka:9092 > /dev/null 2>&1; then
+              echo "Kafka is ready!"
+              break
+            fi
+            echo "Waiting for Kafka... ($RETRY_COUNT/$MAX_RETRIES)"
+            sleep 2
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          done
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "Kafka is not ready after $MAX_RETRIES attempts"
+            exit 1
+          fi
+          echo "Creating topics..."
+          kafka-topics.sh --create \
+            --bootstrap-server {{ include "flask-app.fullname" . }}-kafka:9092 \
+            --topic {{ .Values.kafka.topics.name }} \
+            --partitions {{ .Values.kafka.topics.partitions }} \
+            --replication-factor {{ .Values.kafka.topics.replicas }} \
+            --config retention.ms={{ .Values.kafka.topics.retentionMs }} \
+            --config segment.bytes={{ .Values.kafka.topics.segmentBytes }} \
+            --if-not-exists || echo "Topic already exists or creation failed"
+          echo "Topics created successfully"
+{{- end }}
+

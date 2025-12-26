@@ -1,0 +1,84 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flask-app.fullname" . }}-kafka
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "flask-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: kafka
+spec:
+  replicas: {{ .Values.kafka.replicas }}
+  selector:
+    matchLabels:
+      {{- include "flask-app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: kafka
+  template:
+    metadata:
+      labels:
+        {{- include "flask-app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: {{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag }}
+        imagePullPolicy: {{ .Values.kafka.image.pullPolicy }}
+        ports:
+        - containerPort: 9092
+          name: plain
+          protocol: TCP
+        - containerPort: 9093
+          name: tls
+          protocol: TCP
+        env:
+        - name: KAFKA_NODE_ID
+          value: "1"
+        - name: KAFKA_PROCESS_ROLES
+          value: "broker,controller"
+        - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+          value: "1@{{ include "flask-app.fullname" . }}-kafka:9093"
+        - name: KAFKA_LISTENERS
+          value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+        - name: KAFKA_ADVERTISED_LISTENERS
+          value: "PLAINTEXT://{{ include "flask-app.fullname" . }}-kafka:9092"
+        - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+        - name: KAFKA_CONTROLLER_LISTENER_NAMES
+          value: "CONTROLLER"
+        - name: KAFKA_LOG_DIRS
+          value: "/tmp/kraft-combined-logs"
+        - name: CLUSTER_ID
+          value: "MkU3OEVBNTcwNTJENDM2Qk"
+        - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+          value: "{{ .Values.kafka.offsetsTopicReplicationFactor | toString }}"
+        - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+          value: "{{ .Values.kafka.transactionStateLogReplicationFactor | toString }}"
+        - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+          value: "{{ .Values.kafka.transactionStateLogMinIsr | toString }}"
+        - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+          value: "{{ .Values.kafka.defaultReplicationFactor | toString }}"
+        - name: KAFKA_MIN_INSYNC_REPLICAS
+          value: "{{ .Values.kafka.minInSyncReplicas | toString }}"
+        {{- if .Values.kafka.logRetentionMs }}
+        - name: KAFKA_LOG_RETENTION_MS
+          value: "{{ .Values.kafka.logRetentionMs | toString }}"
+        {{- end }}
+        {{- if .Values.kafka.logSegmentBytes }}
+        - name: KAFKA_LOG_SEGMENT_BYTES
+          value: "{{ .Values.kafka.logSegmentBytes | toString }}"
+        {{- end }}
+        resources:
+          {{- toYaml .Values.kafka.resources | nindent 10 }}
+        volumeMounts:
+        - name: kafka-data
+          mountPath: /tmp/kraft-combined-logs
+      volumes:
+      - name: kafka-data
+        {{- if eq .Values.kafka.storage.type "persistent-claim" }}
+        persistentVolumeClaim:
+          claimName: {{ include "flask-app.fullname" . }}-kafka-data
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+{{- end }}
+

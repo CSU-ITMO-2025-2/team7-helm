@@ -6,14 +6,13 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "flask-app.labels" . | nindent 4 }}
-    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
 spec:
   refreshInterval: {{ .Values.externalSecret.refreshInterval }}
   secretStoreRef:
     name: {{ .Values.externalSecret.secretStore.name }}
     kind: {{ .Values.externalSecret.secretStore.kind }}
   target:
-    name: {{ .Values.kafka.credentialsSecretName }}
+    name: {{ include "flask-app.fullname" . }}-secret-kafka
     creationPolicy: Owner
   data:
     {{- range .Values.externalSecret.kafka.data }}
