@@ -8,7 +8,7 @@ metadata:
     {{- include "flask-app.labels" . | nindent 4 }}
     app.kubernetes.io/component: kafka
 spec:
-  replicas: {{ .Values.kafka.replicas }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "flask-app.selectorLabels" . | nindent 6 }}
@@ -21,8 +21,8 @@ spec:
     spec:
       containers:
       - name: kafka
-        image: {{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag }}
-        imagePullPolicy: {{ .Values.kafka.image.pullPolicy }}
+        image: apache/kafka:3.7.0
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9092
           name: plain
@@ -50,35 +50,31 @@ spec:
         - name: CLUSTER_ID
           value: "MkU3OEVBNTcwNTJENDM2Qk"
         - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
-          value: "{{ .Values.kafka.offsetsTopicReplicationFactor | toString }}"
+          value: "1"
         - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
-          value: "{{ .Values.kafka.transactionStateLogReplicationFactor | toString }}"
+          value: "1"
         - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
-          value: "{{ .Values.kafka.transactionStateLogMinIsr | toString }}"
+          value: "1"
         - name: KAFKA_DEFAULT_REPLICATION_FACTOR
-          value: "{{ .Values.kafka.defaultReplicationFactor | toString }}"
+          value: "1"
         - name: KAFKA_MIN_INSYNC_REPLICAS
-          value: "{{ .Values.kafka.minInSyncReplicas | toString }}"
-        {{- if .Values.kafka.logRetentionMs }}
+          value: "1"
         - name: KAFKA_LOG_RETENTION_MS
-          value: "{{ printf "%d" .Values.kafka.logRetentionMs }}"
-        {{- end }}
-        {{- if .Values.kafka.logSegmentBytes }}
+          value: "86400000"
         - name: KAFKA_LOG_SEGMENT_BYTES
-          value: "{{ printf "%d" .Values.kafka.logSegmentBytes }}"
-        {{- end }}
+          value: "1073741824"
         resources:
-          {{- toYaml .Values.kafka.resources | nindent 10 }}
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 500m
+            memory: 2Gi
         volumeMounts:
         - name: kafka-data
           mountPath: /tmp/kraft-combined-logs
       volumes:
       - name: kafka-data
-        {{- if eq .Values.kafka.storage.type "persistent-claim" }}
-        persistentVolumeClaim:
-          claimName: {{ include "flask-app.fullname" . }}-kafka-data
-        {{- else }}
         emptyDir: {}
-        {{- end }}
 {{- end }}
 
