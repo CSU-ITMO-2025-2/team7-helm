@@ -2,6 +2,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: controller
+  namespace: {{ .Release.Namespace }}
   labels:
     strimzi.io/cluster: my-cluster
 spec:
@@ -27,6 +28,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: broker
+  namespace: {{ .Release.Namespace }}
   labels:
     strimzi.io/cluster: my-cluster
 spec:
@@ -52,6 +54,9 @@ apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: my-cluster
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: my-cluster
 spec:
   kafka:
     version: 4.1.1
