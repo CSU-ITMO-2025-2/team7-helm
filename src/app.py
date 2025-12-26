@@ -138,7 +138,6 @@ def init_s3():
         s3_config = {
             'aws_access_key_id': aws_access_key_id,
             'aws_secret_access_key': aws_secret_access_key,
-            'region_name': aws_region
         }
         
         if aws_endpoint_url:

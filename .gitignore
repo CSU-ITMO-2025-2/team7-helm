@@ -33,3 +33,4 @@ team7-kubeconfig.yaml
 .gitignore
 templates/kafka/kafka-kraft-with-resourses.yaml
 .gitignore
+test.ipynb
