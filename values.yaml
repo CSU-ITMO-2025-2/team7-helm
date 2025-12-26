@@ -219,8 +219,8 @@ kafka:
   # Конфигурация пользователей Kafka
   users:
     producer:
-      username: "KAFKA_USERNAME"  # Имя пользователя Kafka (также можно брать из секрета KAFKA_USERNAME)
-      secretKey: "KAFKA_PASSWORD"  # Ключ в секрете для пароля, должен совпадать с externalSecret.kafka.data[1].secretKey
+      username: "admin"  # Имя пользователя Kafka (также можно брать из секрета KAFKA_USERNAME)
+      secretKey: "admin-secret"  # Ключ в секрете для пароля, должен совпадать с externalSecret.kafka.data[1].secretKey
   
   # Имя секрета с креденшелами Kafka (создается ExternalSecret)
   credentialsSecretName: "flask-app-kafka-credentials"
