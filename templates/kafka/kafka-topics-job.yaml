@@ -22,6 +22,13 @@ spec:
       containers:
       - name: kafka-topics
         image: apache/kafka:3.7.0
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
         command:
         - /bin/sh
         - -c
