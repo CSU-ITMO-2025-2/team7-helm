@@ -165,7 +165,7 @@ kafka:
   replicas: 1  # Количество реплик Kafka (controller и broker NodePools)
   image:
     # В Strimzi образ управляется оператором, версия указывается отдельно
-    tag: "3.9.0"  # Версия Kafka (должна поддерживаться Strimzi оператором)
+    tag: "4.1.1"  # Версия Kafka (поддерживаемые: 4.0.0, 4.0.1, 4.1.0, 4.1.1)
   minInSyncReplicas: 1  # Минимальное количество синхронизированных реплик
   offsetsTopicReplicationFactor: 1
   transactionStateLogReplicationFactor: 1
