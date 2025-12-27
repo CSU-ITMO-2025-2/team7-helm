@@ -1,4 +1,3 @@
-{{- if and .Values.kafka.enabled .Values.externalSecret.enabled .Values.externalSecret.kafka.enabled }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaUser
 metadata:
