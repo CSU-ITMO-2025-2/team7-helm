@@ -54,23 +54,23 @@ kafka:
     storageClass: ""
   # Strimzi Kafka KRaft configuration
   controller:
-    replicas: 3
+    replicas: 1
   broker:
-    replicas: 3
+    replicas: 1
   resources:
     requests:
       memory: "512Mi"
-      cpu: "500m"
+      cpu: "300m"
     limits:
       memory: "1Gi"
-      cpu: "500m"
+      cpu: "400m"
   storage:
     type: ephemeral
-  offsetsTopicReplicationFactor: 3
-  transactionStateLogReplicationFactor: 3
-  transactionStateLogMinIsr: 2
-  defaultReplicationFactor: 3
-  minInSyncReplicas: 2
+  offsetsTopicReplicationFactor: 1
+  transactionStateLogReplicationFactor: 1
+  transactionStateLogMinIsr: 1
+  defaultReplicationFactor: 1
+  minInSyncReplicas: 1
   logRetentionMs: 86400000  
   logSegmentBytes: 1073741824  
   topics:
