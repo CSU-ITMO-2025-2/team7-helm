@@ -45,7 +45,7 @@ kafka:
   clusterName: team7-kafka
   image:
     repository: confluentinc/cp-kafka
-    tag: "7.5.0"
+    tag: "4.1.1"
   service:
     port: 9092
   persistence:
