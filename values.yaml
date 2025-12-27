@@ -201,7 +201,7 @@ kafka:
       cpu: 500m
       memory: 1Gi
     limits:
-      cpu: 900m  # Уменьшено с 1000m для соответствия ResourceQuota
+      cpu: 750m  # Уменьшено для соответствия ResourceQuota (нужно место для entity-operator)
       memory: 2Gi
   # Дополнительные настройки Kafka
   logRetentionMs: 86400000  # Время хранения логов (1 день)
