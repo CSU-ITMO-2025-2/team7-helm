@@ -218,14 +218,14 @@ kafkaUi:
     repository: ghcr.io/kafbat/kafka-ui
     tag: "latest"
     pullPolicy: IfNotPresent
-  # Ресурсы для Kafka UI (уменьшены для соответствия квоте)
+  # Ресурсы для Kafka UI (Java приложение требует больше памяти)
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 100m
+      memory: 512Mi
     limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 500m
+      memory: 768Mi
   # Настройки сервиса
   service:
     type: ClusterIP
