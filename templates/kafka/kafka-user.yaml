@@ -1,0 +1,36 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: {{ .Values.kafka.users.username }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  authentication:
+    type: scram-sha-512
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.kafka.credentialsSecretName }}
+          key: {{ .Values.kafka.users.producer.secretKey }}
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: {{ .Values.kafka.topics.rawReviews.name }}
+          patternType: literal
+        operations: [Read, Write, Create, Describe]
+        host: "*"
+      - resource:
+          type: topic
+          name: raw_reviews
+          patternType: literal
+        operations: [Read, Write, Create, Describe]
+        host: "*"
+      - resource:
+          type: group
+          name: producer-group
+          patternType: literal
+        operations: [Read, Describe]
+        host: "*"

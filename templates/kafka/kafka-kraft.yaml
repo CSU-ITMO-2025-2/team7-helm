@@ -1,9 +1,11 @@
+{{- if .Values.kafka.enabled }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: controller
+  namespace: {{ .Release.Namespace }}
   labels:
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
 spec:
   replicas: 3
   roles:
@@ -21,14 +23,16 @@ spec:
       - id: 0
         type: ephemeral
         kraftMetadata: shared
+
 ---
 
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: broker
+  namespace: {{ .Release.Namespace }}
   labels:
-    strimzi.io/cluster: my-cluster
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
 spec:
   replicas: 3
   roles:
@@ -51,7 +55,8 @@ spec:
 apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
-  name: my-cluster
+  name: {{ .Values.kafka.clusterName }}
+  namespace: {{ .Release.Namespace }}
 spec:
   kafka:
     version: 4.1.1

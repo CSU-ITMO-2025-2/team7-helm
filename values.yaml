@@ -157,10 +157,11 @@ externalSecret:
           key: kv/data/team7/s3  # Путь к секрету S3 в Vault
           property: AWS_ENDPOINT_URL  # Свойство из секрета в Vault
 
-# Kafka configuration через Docker-образ
+# Kafka configuration через Strimzi Operator
 # Используется Apache Kafka в режиме KRaft (без Zookeeper)
 kafka:
   enabled: true
+  clusterName: "kafka-cluster"  # Имя кластера Kafka (используется в strimzi.io/cluster label)
   replicas: 1  # Количество реплик Kafka
   image:
     repository: apache/kafka  # Docker-образ Kafka
@@ -189,19 +190,21 @@ kafka:
   logSegmentBytes: 1073741824  # Размер сегмента лога (1Gi)
   # Топики для создания
   topics:
-    name: "flask-app-events"
+    name: "events"
     partitions: 3
     replicas: 1
     retentionMs: 86400000  # 1 день
     segmentBytes: 1073741824  # 1Gi
-
+  users:
+    username: "KAFKA_USERNAME"
+    secretKey: "KAFKA_PASSWORD"
 # Конфигурация приложения для работы с Kafka
 app:
   kafka:
     enabled: true
     # Имя сервиса Kafka формируется как <release-name>-kafka:9092
     # Оставьте пустым для автоматического определения
-    bootstrapServers: ""  # Оставьте пустым для автоматического определения, или укажите явно
-    topic: "flask-app-events"  # Топик по умолчанию
+    bootstrapServers: "kafka-cluster-kafka-bootstrap"  # Оставьте пустым для автоматического определения, или укажите явно
+    topic: "events"  # Топик по умолчанию
     consumerGroup: "flask-app-consumer"  # Consumer group ID
 

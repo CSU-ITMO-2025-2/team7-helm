@@ -90,7 +90,7 @@ spec:
               {{- if .Values.app.kafka.bootstrapServers }}
               value: {{ .Values.app.kafka.bootstrapServers | quote }}
               {{- else if .Values.kafka.enabled }}
-              value: {{ printf "%s-kafka:9092" (include "flask-app.fullname" .) | quote }}
+              value: {{ printf "%s-kafka-bootstrap:9092" .Values.kafka.clusterName | quote }}
               {{- else }}
               value: "localhost:9092"
               {{- end }}
