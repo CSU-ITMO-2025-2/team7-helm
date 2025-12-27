@@ -19,7 +19,7 @@ spec:
     acls:
       - resource:
           type: topic
-          name: KAFKA_TOPIC_NAME
+          name: {{ .Values.kafka.topics.name | quote }}
           patternType: literal
         operations: [Read, Write, Create, Describe]
         host: "*"

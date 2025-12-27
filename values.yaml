@@ -74,10 +74,7 @@ kafka:
   logRetentionMs: 604800000
   logSegmentBytes: 1073741824
   topics:
-    # name should match KAFKA_TOPIC_NAME from kafka-secrets
-    # This value will be read from the secret created by External Secrets Operator
-    # After the secret is created, update this value to match KAFKA_TOPIC_NAME from the secret
-    name: runs  # Update this to match the value from {{ include "team7-helm.fullname" . }}-kafka-secrets KAFKA_TOPIC_NAME
+    name: runs
     partitions: 1
     replicas: 1
     retentionMs: 604800000
