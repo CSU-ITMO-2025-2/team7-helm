@@ -30,6 +30,7 @@ Thumbs.db
 *.log
 
 team7-kubeconfig.yaml
+team7-kubeconfig
 .gitignore
 templates/kafka/kafka-kraft-with-resourses.yaml
 .gitignore

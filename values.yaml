@@ -210,3 +210,36 @@ app:
     topic: "events"  # Топик по умолчанию
     consumerGroup: "flask-app-consumer"  # Consumer group ID
 
+# Kafka UI для визуального управления Kafka кластером
+# Использует provectus/kafka-ui
+kafkaUi:
+  enabled: true
+  image:
+    repository: provectus/kafka-ui
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  # Ресурсы для Kafka UI (уменьшены для соответствия квоте)
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  # Настройки сервиса
+  service:
+    type: ClusterIP
+    port: 8080
+  # Настройки подключения к Kafka
+  kafka:
+    # Bootstrap server для Strimzi Kafka
+    # По умолчанию: my-cluster-kafka-bootstrap:9092
+    bootstrapServers: "my-cluster-kafka-bootstrap:9092"
+    # Название кластера в UI
+    clusterName: "team7-kafka"
+    # SCRAM-SHA-512 аутентификация (credentials берутся из externalSecret.kafka)
+    auth:
+      enabled: true
+      mechanism: "SCRAM-SHA-512"
+      protocol: "SASL_PLAINTEXT"
+
