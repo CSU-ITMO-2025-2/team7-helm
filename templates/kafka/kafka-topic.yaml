@@ -1,0 +1,15 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: KAFKA_TOPIC_NAME
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  partitions: {{ .Values.kafka.topics.partitions }}
+  replicas: {{ .Values.kafka.topics.replicas }}
+  config:
+    retention.ms: {{ .Values.kafka.topics.retentionMs | int64 | quote }}
+    segment.bytes: {{ .Values.kafka.topics.segmentBytes | int64 | quote }}
+{{- end }}

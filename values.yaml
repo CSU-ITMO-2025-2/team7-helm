@@ -42,6 +42,7 @@ zookeeper:
 # Kafka configuration
 kafka:
   enabled: true
+  clusterName: team7-kafka
   image:
     repository: confluentinc/cp-kafka
     tag: "7.5.0"
@@ -51,6 +52,49 @@ kafka:
     enabled: true
     size: 20Gi
     storageClass: ""
+  # Strimzi Kafka KRaft configuration
+  controller:
+    replicas: 1
+  broker:
+    replicas: 1
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+  storage:
+    type: persistent-claim
+  offsetsTopicReplicationFactor: 1
+  transactionStateLogReplicationFactor: 1
+  transactionStateLogMinIsr: 1
+  defaultReplicationFactor: 1
+  minInSyncReplicas: 1
+  logRetentionMs: 604800000
+  logSegmentBytes: 1073741824
+  topics:
+    # name should match KAFKA_TOPIC_NAME from kafka-secrets
+    # This value will be read from the secret created by External Secrets Operator
+    # After the secret is created, update this value to match KAFKA_TOPIC_NAME from the secret
+    name: runs  # Update this to match the value from {{ include "team7-helm.fullname" . }}-kafka-secrets KAFKA_TOPIC_NAME
+    partitions: 1
+    replicas: 1
+    retentionMs: 604800000
+    segmentBytes: 1073741824
+  users:
+    username: team7-kafka-user
+  cruiseControl:
+    enabled: false
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+    autoRebalance:
+      enabled: false
 
 # Kafka UI configuration
 kafkaUI:

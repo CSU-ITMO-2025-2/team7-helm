@@ -1,0 +1,122 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  replicas: {{ .Values.kafka.controller.replicas }}
+  roles:
+    - controller
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: "150m"
+    limits:
+      memory: 512Mi
+      cpu: "200m"
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: {{ .Values.kafka.storage.type }}
+        kraftMetadata: shared
+
+---
+
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: broker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  replicas: {{ .Values.kafka.broker.replicas }}
+  roles:
+    - broker
+  resources:
+    requests:
+      memory: {{ .Values.kafka.resources.requests.memory }}
+      cpu: {{ .Values.kafka.resources.requests.cpu | quote }}
+    limits:
+      memory: {{ .Values.kafka.resources.limits.memory }}
+      cpu: {{ .Values.kafka.resources.limits.cpu | quote }}
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: {{ .Values.kafka.storage.type }}
+        kraftMetadata: shared
+---
+
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: {{ .Values.kafka.clusterName }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    strimzi.io/node-pools: enabled
+spec:
+  kafka:
+    version: {{ .Values.kafka.image.tag }}
+    authorization:
+      type: simple
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+        authentication:
+          type: scram-sha-512
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+    config:
+      offsets.topic.replication.factor: {{ .Values.kafka.offsetsTopicReplicationFactor }}
+      transaction.state.log.replication.factor: {{ .Values.kafka.transactionStateLogReplicationFactor }}
+      transaction.state.log.min.isr: {{ .Values.kafka.transactionStateLogMinIsr }}
+      default.replication.factor: {{ .Values.kafka.defaultReplicationFactor }}
+      min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}
+      log.retention.ms: {{ .Values.kafka.logRetentionMs | int64 }}
+      log.segment.bytes: {{ .Values.kafka.logSegmentBytes | int64 }}
+  entityOperator:
+    topicOperator: 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+    userOperator: 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+  {{- if and .Values.kafka.cruiseControl.enabled (ge (int .Values.kafka.broker.replicas) 2) }}
+  # Cruise Control для автоматической ребалансировки (требует минимум 2 брокера)
+  cruiseControl:
+    resources:
+      requests:
+        cpu: {{ .Values.kafka.cruiseControl.resources.requests.cpu }}
+        memory: {{ .Values.kafka.cruiseControl.resources.requests.memory }}
+      limits:
+        cpu: {{ .Values.kafka.cruiseControl.resources.limits.cpu }}
+        memory: {{ .Values.kafka.cruiseControl.resources.limits.memory }}
+    config:
+      # Интервал сбора метрик (в миллисекундах)
+      sample.store.topic.replication.factor: 1
+      # Разрешить автоматическую ребалансировку
+      self.healing.enabled: true
+    # Автоматическая ребалансировка при изменении количества брокеров
+    autoRebalance:
+      {{- toYaml .Values.kafka.cruiseControl.autoRebalance | nindent 6 }}
+  {{- end }}
+{{- end }}

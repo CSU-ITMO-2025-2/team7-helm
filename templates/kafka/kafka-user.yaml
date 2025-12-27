@@ -1,0 +1,26 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: {{ .Values.kafka.users.username | default (include "team7-helm.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    strimzi.io/cluster: {{ .Values.kafka.clusterName }}
+spec:
+  authentication:
+    type: scram-sha-512
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+          key: KAFKA_PASSWORD
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: KAFKA_TOPIC_NAME
+          patternType: literal
+        operations: [Read, Write, Create, Describe]
+        host: "*"
+{{- end }}
