@@ -2,18 +2,10 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: controller
-  namespace: {{ .Release.Namespace }}
   labels:
     strimzi.io/cluster: my-cluster
 spec:
   replicas: 3
-  resources:
-    limits:
-      cpu: 200m
-      memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 1Gi
   roles:
     - controller
   resources:
@@ -35,18 +27,10 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: broker
-  namespace: {{ .Release.Namespace }}
   labels:
     strimzi.io/cluster: my-cluster
 spec:
   replicas: 3
-  resources:
-    limits:
-      cpu: 200m
-      memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 1Gi
   roles:
     - broker
   resources:
@@ -68,11 +52,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: my-cluster
-  namespace: {{ .Release.Namespace }}
-  labels:
-    strimzi.io/cluster: my-cluster
 spec:
-  # Пример настройки логирования для Kafka и операторов
   kafka:
     version: 4.1.1
     authorization:
@@ -94,28 +74,15 @@ spec:
       transaction.state.log.min.isr: 2
       default.replication.factor: 3
       min.insync.replicas: 2
-    logging:
-      type: inline
-      loggers:
-        # Логирование Kafka (уровни: TRACE, DEBUG, INFO, WARN, ERROR)
-        log4j.logger.org.apache.kafka: INFO
-        log4j.logger.kafka: INFO
-        log4j.logger.org.apache.zookeeper: WARN
-        rootLogger.level: INFO
   entityOperator:
-    topicOperator:
+    topicOperator: 
       resources:
-        limits:
-          cpu: 200m
-          memory: 512Mi
         requests:
           cpu: 100m
           memory: 256Mi
-      logging:
-        type: inline
-        loggers:
-          rootLogger.level: INFO
-          log4j.logger.operator: INFO
+        limits:
+          cpu: 200m
+          memory: 512Mi
     userOperator: 
       resources:
         requests:
@@ -124,8 +91,3 @@ spec:
         limits:
           cpu: 200m
           memory: 512Mi
-      logging:
-        type: inline
-        loggers:
-          rootLogger.level: INFO
-          log4j.logger.operator: INFO
