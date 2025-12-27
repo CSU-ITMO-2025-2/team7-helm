@@ -28,13 +28,26 @@ def init_kafka():
     """Инициализация Kafka Producer и Consumer"""
     global kafka_producer, kafka_consumer, consumer_thread
     
+    # #region agent log H1,H5
+    app.logger.warning("[DEBUG] init_kafka() ВЫЗВАНА")
+    # #endregion
+    
     bootstrap_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
     topic = os.getenv('KAFKA_TOPIC', 'flask-app-events')
     consumer_group = os.getenv('KAFKA_CONSUMER_GROUP', 'flask-app-consumer')
     
+    # #region agent log H5
+    app.logger.warning(f"[DEBUG H5] bootstrap_servers='{bootstrap_servers}' (содержит :9092? {':9092' in bootstrap_servers})")
+    # #endregion
+    
     # SASL аутентификация (опционально)
     kafka_username = os.getenv('KAFKA_USERNAME')
     kafka_password = os.getenv('KAFKA_PASSWORD')
+    
+    # #region agent log H2,H4
+    app.logger.warning(f"[DEBUG H2] KAFKA_USERNAME='{kafka_username}' (set={bool(kafka_username)})")
+    app.logger.warning(f"[DEBUG H2] KAFKA_PASSWORD set={bool(kafka_password)}, len={len(kafka_password) if kafka_password else 0}")
+    # #endregion
     
     # Базовая конфигурация
     kafka_config = {
@@ -49,16 +62,39 @@ def init_kafka():
             'sasl_plain_username': kafka_username,
             'sasl_plain_password': kafka_password,
         })
+        # #region agent log H2
+        app.logger.warning(f"[DEBUG H2] SASL конфигурация ДОБАВЛЕНА для пользователя: {kafka_username}")
+        # #endregion
         app.logger.info(f"Kafka SASL аутентификация включена для пользователя: {kafka_username}")
+    else:
+        # #region agent log H2
+        app.logger.warning(f"[DEBUG H2] SASL конфигурация НЕ добавлена! username={bool(kafka_username)}, password={bool(kafka_password)}")
+        # #endregion
+    
+    # #region agent log H3
+    app.logger.warning(f"[DEBUG H3] kafka_config (без пароля): bootstrap_servers={kafka_config.get('bootstrap_servers')}, security_protocol={kafka_config.get('security_protocol')}")
+    # #endregion
     
     try:
+        # #region agent log H3
+        app.logger.warning("[DEBUG H3] Попытка создания KafkaProducer...")
+        # #endregion
+        
         # Инициализация Producer
         kafka_producer = KafkaProducer(
             **kafka_config,
             value_serializer=lambda v: json.dumps(v).encode('utf-8'),
             key_serializer=lambda k: k.encode('utf-8') if k else None
         )
+        
+        # #region agent log H3
+        app.logger.warning(f"[DEBUG H3] KafkaProducer УСПЕШНО создан: {kafka_producer}")
+        # #endregion
         app.logger.info(f"Kafka Producer инициализирован: {bootstrap_servers}")
+        
+        # #region agent log H3
+        app.logger.warning("[DEBUG H3] Попытка создания KafkaConsumer...")
+        # #endregion
         
         # Инициализация Consumer
         kafka_consumer = KafkaConsumer(
@@ -69,6 +105,10 @@ def init_kafka():
             auto_offset_reset='latest',
             enable_auto_commit=True
         )
+        
+        # #region agent log H3
+        app.logger.warning(f"[DEBUG H3] KafkaConsumer УСПЕШНО создан: {kafka_consumer}")
+        # #endregion
         app.logger.info(f"Kafka Consumer инициализирован: {bootstrap_servers}, topic: {topic}")
         
         # Запуск потока для чтения сообщений
@@ -97,6 +137,11 @@ def init_kafka():
         app.logger.info("Поток чтения сообщений из Kafka запущен")
         
     except Exception as e:
+        # #region agent log H3
+        import traceback
+        app.logger.warning(f"[DEBUG H3] ИСКЛЮЧЕНИЕ при инициализации Kafka: {type(e).__name__}: {e}")
+        app.logger.warning(f"[DEBUG H3] Traceback: {traceback.format_exc()}")
+        # #endregion
         app.logger.error(f"Ошибка инициализации Kafka: {e}")
         kafka_producer = None
         kafka_consumer = None
@@ -133,8 +178,16 @@ def init_postgres():
 
 
 # Инициализация Kafka при старте приложения
+# #region agent log H1
+_kafka_bs = os.getenv('KAFKA_BOOTSTRAP_SERVERS')
+app.logger.warning(f"[DEBUG H1] KAFKA_BOOTSTRAP_SERVERS='{_kafka_bs}' (bool={bool(_kafka_bs)})")
+# #endregion
 if os.getenv('KAFKA_BOOTSTRAP_SERVERS'):
     init_kafka()
+else:
+    # #region agent log H1
+    app.logger.warning("[DEBUG H1] init_kafka() НЕ вызвана - KAFKA_BOOTSTRAP_SERVERS пустая!")
+    # #endregion
 
 # Инициализация PostgreSQL при старте приложения
 init_postgres()
