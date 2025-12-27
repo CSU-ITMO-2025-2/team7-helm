@@ -83,6 +83,10 @@ spec:
             - secretRef:
                 name: {{ include "flask-app.fullname" . }}-secret-s3
             {{- end }}
+            {{- if and .Values.externalSecret.kafka.enabled }}
+            - secretRef:
+                name: {{ include "flask-app.fullname" . }}-secret-kafka
+            {{- end }}
           {{- end }}
           {{- if .Values.app.kafka.enabled }}
           env:

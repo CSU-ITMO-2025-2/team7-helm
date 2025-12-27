@@ -32,10 +32,29 @@ def init_kafka():
     topic = os.getenv('KAFKA_TOPIC', 'flask-app-events')
     consumer_group = os.getenv('KAFKA_CONSUMER_GROUP', 'flask-app-consumer')
     
+    # SASL аутентификация (опционально)
+    kafka_username = os.getenv('KAFKA_USERNAME')
+    kafka_password = os.getenv('KAFKA_PASSWORD')
+    
+    # Базовая конфигурация
+    kafka_config = {
+        'bootstrap_servers': bootstrap_servers.split(','),
+    }
+    
+    # Добавляем SASL конфигурацию если есть учетные данные
+    if kafka_username and kafka_password:
+        kafka_config.update({
+            'security_protocol': 'SASL_PLAINTEXT',
+            'sasl_mechanism': 'SCRAM-SHA-512',
+            'sasl_plain_username': kafka_username,
+            'sasl_plain_password': kafka_password,
+        })
+        app.logger.info(f"Kafka SASL аутентификация включена для пользователя: {kafka_username}")
+    
     try:
         # Инициализация Producer
         kafka_producer = KafkaProducer(
-            bootstrap_servers=bootstrap_servers.split(','),
+            **kafka_config,
             value_serializer=lambda v: json.dumps(v).encode('utf-8'),
             key_serializer=lambda k: k.encode('utf-8') if k else None
         )
@@ -44,7 +63,7 @@ def init_kafka():
         # Инициализация Consumer
         kafka_consumer = KafkaConsumer(
             topic,
-            bootstrap_servers=bootstrap_servers.split(','),
+            **kafka_config,
             group_id=consumer_group,
             value_deserializer=lambda m: json.loads(m.decode('utf-8')),
             auto_offset_reset='latest',
@@ -239,12 +258,15 @@ def get_messages():
 @app.route('/kafka/status', methods=['GET'])
 def kafka_status():
     """Статус подключения к Kafka"""
+    kafka_username = os.getenv('KAFKA_USERNAME')
     return jsonify({
         'producer_enabled': kafka_producer is not None,
         'consumer_enabled': kafka_consumer is not None,
         'bootstrap_servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'не настроено'),
         'topic': os.getenv('KAFKA_TOPIC', 'не настроено'),
         'consumer_group': os.getenv('KAFKA_CONSUMER_GROUP', 'не настроено'),
+        'sasl_enabled': bool(kafka_username and os.getenv('KAFKA_PASSWORD')),
+        'sasl_username': kafka_username if kafka_username else 'не настроено',
         'messages_received': len(received_messages)
     }), 200
 

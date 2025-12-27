@@ -224,7 +224,7 @@ app:
     enabled: true
     # Имя сервиса Kafka формируется как <release-name>-kafka:9092
     # Оставьте пустым для автоматического определения
-    bootstrapServers: "kafka-cluster-kafka-bootstrap"  # Оставьте пустым для автоматического определения, или укажите явно
+    bootstrapServers: "kafka-cluster-kafka-bootstrap:9092"  # Оставьте пустым для автоматического определения, или укажите явно
     topic: "events"  # Топик по умолчанию
     consumerGroup: "flask-app-consumer"  # Consumer group ID
 
