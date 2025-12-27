@@ -215,7 +215,7 @@ app:
 kafkaUi:
   enabled: true
   image:
-    repository: provectus/kafka-ui
+    repository: ghcr.io/kafbat/kafka-ui
     tag: "latest"
     pullPolicy: IfNotPresent
   # Ресурсы для Kafka UI (уменьшены для соответствия квоте)
