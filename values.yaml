@@ -162,10 +162,30 @@ externalSecret:
 kafka:
   enabled: true
   clusterName: "kafka-cluster"  # Имя кластера Kafka (используется в strimzi.io/cluster label)
-  replicas: 1  # Количество реплик Kafka (controller и broker NodePools)
   image:
     # В Strimzi образ управляется оператором, версия указывается отдельно
     tag: "4.1.1"  # Версия Kafka (поддерживаемые: 4.0.0, 4.0.1, 4.1.0, 4.1.1)
+  # Настройки реплик для NodePools
+  broker:
+    replicas: 1  # Количество брокеров (можно масштабировать)
+  controller:
+    replicas: 1  # Количество контроллеров (обычно 1 или 3)
+  # Cruise Control для автоматической ребалансировки при масштабировании
+  cruiseControl:
+    enabled: true  # Включить Cruise Control
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    # Автоматическая ребалансировка при добавлении/удалении брокеров
+    autoRebalance:
+      - mode: add-brokers  # Ребалансировка при добавлении брокеров
+        brokers: []  # Пустой список = все новые брокеры
+      - mode: remove-brokers  # Ребалансировка при удалении брокеров
+        brokers: []
   minInSyncReplicas: 1  # Минимальное количество синхронизированных реплик
   offsetsTopicReplicationFactor: 1
   transactionStateLogReplicationFactor: 1

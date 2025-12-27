@@ -7,7 +7,7 @@ metadata:
   labels:
     strimzi.io/cluster: {{ .Values.kafka.clusterName }}
 spec:
-  replicas: {{ .Values.kafka.replicas }}
+  replicas: {{ .Values.kafka.controller.replicas }}
   roles:
     - controller
   resources:
@@ -34,7 +34,7 @@ metadata:
   labels:
     strimzi.io/cluster: {{ .Values.kafka.clusterName }}
 spec:
-  replicas: {{ .Values.kafka.replicas }}
+  replicas: {{ .Values.kafka.broker.replicas }}
   roles:
     - broker
   resources:
@@ -57,6 +57,11 @@ kind: Kafka
 metadata:
   name: {{ .Values.kafka.clusterName }}
   namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- if .Values.kafka.cruiseControl.enabled }}
+    # Включение автоматической ребалансировки при масштабировании
+    strimzi.io/node-pools: enabled
+    {{- end }}
 spec:
   kafka:
     version: {{ .Values.kafka.image.tag }}
@@ -98,4 +103,23 @@ spec:
         limits:
           cpu: 200m
           memory: 512Mi
+  {{- if .Values.kafka.cruiseControl.enabled }}
+  # Cruise Control для автоматической ребалансировки и оптимизации кластера
+  cruiseControl:
+    resources:
+      requests:
+        cpu: {{ .Values.kafka.cruiseControl.resources.requests.cpu }}
+        memory: {{ .Values.kafka.cruiseControl.resources.requests.memory }}
+      limits:
+        cpu: {{ .Values.kafka.cruiseControl.resources.limits.cpu }}
+        memory: {{ .Values.kafka.cruiseControl.resources.limits.memory }}
+    config:
+      # Интервал сбора метрик (в миллисекундах)
+      sample.store.topic.replication.factor: 1
+      # Разрешить автоматическую ребалансировку
+      self.healing.enabled: true
+    # Автоматическая ребалансировка при изменении количества брокеров
+    autoRebalance:
+      {{- toYaml .Values.kafka.cruiseControl.autoRebalance | nindent 6 }}
+  {{- end }}
 {{- end }}
