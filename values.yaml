@@ -167,12 +167,12 @@ kafka:
     tag: "4.1.1"  # Версия Kafka (поддерживаемые: 4.0.0, 4.0.1, 4.1.0, 4.1.1)
   # Настройки реплик для NodePools
   broker:
-    replicas: 1  # Количество брокеров (можно масштабировать)
+    replicas: 3  # Количество брокеров (минимум 3 для production)
   controller:
-    replicas: 1  # Количество контроллеров (обычно 1 или 3)
+    replicas: 3  # Количество контроллеров (3 для кворума)
   # Cruise Control для автоматической ребалансировки при масштабировании
   cruiseControl:
-    enabled: true  # Включить Cruise Control
+    enabled: true  # Включить Cruise Control (активируется при broker.replicas >= 2)
     resources:
       requests:
         cpu: 200m
@@ -186,14 +186,15 @@ kafka:
         brokers: []  # Пустой список = все новые брокеры
       - mode: remove-brokers  # Ребалансировка при удалении брокеров
         brokers: []
-  minInSyncReplicas: 1  # Минимальное количество синхронизированных реплик
-  offsetsTopicReplicationFactor: 1
-  transactionStateLogReplicationFactor: 1
-  transactionStateLogMinIsr: 1
-  defaultReplicationFactor: 1
+  # Настройки репликации для отказоустойчивости
+  minInSyncReplicas: 2  # Минимум 2 синхронизированные реплики для подтверждения записи
+  offsetsTopicReplicationFactor: 3  # Репликация системного топика offsets
+  transactionStateLogReplicationFactor: 3  # Репликация транзакционного лога
+  transactionStateLogMinIsr: 2  # Минимум ISR для транзакций
+  defaultReplicationFactor: 3  # Репликация по умолчанию для новых топиков
   # Хранилище для Kafka
   storage:
-    type: "ephemeral"  # ephemeral или persistent-claim
+    type: "ephemeral"  # ephemeral или persistent-claim (для production используйте persistent-claim)
     size: "10Gi"  # Используется только для persistent-claim
     class: ""  # Storage class (опционально)
   # Ресурсы для Kafka брокеров
@@ -202,7 +203,7 @@ kafka:
       cpu: 500m
       memory: 1Gi
     limits:
-      cpu: 500m
+      cpu: 1000m
       memory: 2Gi
   # Дополнительные настройки Kafka
   logRetentionMs: 86400000  # Время хранения логов (1 день)
@@ -210,8 +211,8 @@ kafka:
   # Топики для создания
   topics:
     name: "events"
-    partitions: 3
-    replicas: 1
+    partitions: 6  # Больше партиций для лучшего распределения нагрузки
+    replicas: 3  # Репликация на все 3 брокера
     retentionMs: 86400000  # 1 день
     segmentBytes: 1073741824  # 1Gi
   users:
