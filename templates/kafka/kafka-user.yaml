@@ -1,3 +1,4 @@
+{{- if .Values.kafka.enabled }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaUser
 metadata:
@@ -12,7 +13,7 @@ spec:
       valueFrom:
         secretKeyRef:
           name: {{ include "flask-app.fullname" . }}-secret-kafka
-          key: KAFKA_PASSWORD
+          key: {{ .Values.kafka.users.secretKey }}
   authorization:
     type: simple
     acls:
@@ -22,3 +23,4 @@ spec:
           patternType: literal
         operations: [Read, Write, Create, Describe]
         host: "*"
+{{- end }}

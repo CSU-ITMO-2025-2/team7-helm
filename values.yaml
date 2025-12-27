@@ -162,11 +162,10 @@ externalSecret:
 kafka:
   enabled: true
   clusterName: "kafka-cluster"  # Имя кластера Kafka (используется в strimzi.io/cluster label)
-  replicas: 1  # Количество реплик Kafka
+  replicas: 1  # Количество реплик Kafka (controller и broker NodePools)
   image:
-    repository: apache/kafka  # Docker-образ Kafka
-    tag: "3.7.0"  # Версия Kafka
-    pullPolicy: IfNotPresent
+    # В Strimzi образ управляется оператором, версия указывается отдельно
+    tag: "3.9.0"  # Версия Kafka (должна поддерживаться Strimzi оператором)
   minInSyncReplicas: 1  # Минимальное количество синхронизированных реплик
   offsetsTopicReplicationFactor: 1
   transactionStateLogReplicationFactor: 1

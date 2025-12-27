@@ -1,3 +1,4 @@
+{{- if .Values.kafka.enabled }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
@@ -6,7 +7,7 @@ metadata:
   labels:
     strimzi.io/cluster: {{ .Values.kafka.clusterName }}
 spec:
-  replicas: 3
+  replicas: {{ .Values.kafka.replicas }}
   roles:
     - controller
   resources:
@@ -20,7 +21,7 @@ spec:
     type: jbod
     volumes:
       - id: 0
-        type: ephemeral
+        type: {{ .Values.kafka.storage.type }}
         kraftMetadata: shared
 
 ---
@@ -33,21 +34,21 @@ metadata:
   labels:
     strimzi.io/cluster: {{ .Values.kafka.clusterName }}
 spec:
-  replicas: 3
+  replicas: {{ .Values.kafka.replicas }}
   roles:
     - broker
   resources:
     requests:
-      memory: 1Gi
-      cpu: "100m"
+      memory: {{ .Values.kafka.resources.requests.memory }}
+      cpu: {{ .Values.kafka.resources.requests.cpu | quote }}
     limits:
-      memory: 1Gi
-      cpu: "200m"
+      memory: {{ .Values.kafka.resources.limits.memory }}
+      cpu: {{ .Values.kafka.resources.limits.cpu | quote }}
   storage:
     type: jbod
     volumes:
       - id: 0
-        type: ephemeral
+        type: {{ .Values.kafka.storage.type }}
         kraftMetadata: shared
 ---
 
@@ -58,7 +59,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   kafka:
-    version: 4.1.1
+    version: {{ .Values.kafka.image.tag }}
     authorization:
       type: simple
     listeners:
@@ -73,11 +74,13 @@ spec:
         type: internal
         tls: true
     config:
-      offsets.topic.replication.factor: 3
-      transaction.state.log.replication.factor: 3
-      transaction.state.log.min.isr: 2
-      default.replication.factor: 3
-      min.insync.replicas: 2
+      offsets.topic.replication.factor: {{ .Values.kafka.offsetsTopicReplicationFactor }}
+      transaction.state.log.replication.factor: {{ .Values.kafka.transactionStateLogReplicationFactor }}
+      transaction.state.log.min.isr: {{ .Values.kafka.transactionStateLogMinIsr }}
+      default.replication.factor: {{ .Values.kafka.defaultReplicationFactor }}
+      min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}
+      log.retention.ms: {{ .Values.kafka.logRetentionMs | int64 }}
+      log.segment.bytes: {{ .Values.kafka.logSegmentBytes | int64 }}
   entityOperator:
     topicOperator: 
       resources:
@@ -95,3 +98,4 @@ spec:
         limits:
           cpu: 200m
           memory: 512Mi
+{{- end }}
