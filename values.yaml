@@ -1,0 +1,124 @@
+global:
+  namespace: team7-ns
+
+# Service Account configuration
+serviceAccount:
+  create: true
+  name: ""
+
+# External Secrets configuration
+externalSecrets:
+  vault:
+    secretStoreRef:
+      name: vault-team7
+      kind: SecretStore
+
+
+# PostgreSQL configuration (external, configured via Vault)
+postgres:
+  enabled: false
+
+# PgAdmin configuration
+pgadmin:
+  enabled: false
+
+# MinIO configuration (external S3, configured via Vault)
+minio:
+  enabled: false
+
+# Zookeeper configuration
+zookeeper:
+  enabled: true
+  image:
+    repository: confluentinc/cp-zookeeper
+    tag: "7.5.0"
+  service:
+    port: 2181
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+
+# Kafka configuration
+kafka:
+  enabled: true
+  image:
+    repository: confluentinc/cp-kafka
+    tag: "7.5.0"
+  service:
+    port: 9092
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: ""
+
+# Kafka UI configuration
+kafkaUI:
+  enabled: true
+  image:
+    repository: provectuslabs/kafka-ui
+    tag: "v0.7.2"
+  service:
+    port: 8080
+    nodePort: 30080
+
+# Migrations configuration
+migrations:
+  enabled: true
+  image:
+    repository: ghcr.io/csu-itmo-2025-2/team7-migrations
+    tag: "latest"
+  restartPolicy: Never
+
+# Core Service configuration
+coreService:
+  enabled: true
+  image:
+    repository: ghcr.io/csu-itmo-2025-2/team7-core-service
+    tag: "latest"
+  service:
+    port: 8000
+    nodePort: 30000
+  replicas: 1
+
+# Train Service configuration
+trainService:
+  enabled: true
+  image:
+    repository: ghcr.io/csu-itmo-2025-2/team7-train-service
+    tag: "latest"
+  service:
+    port: 8005
+    nodePort: 30005
+  replicas: 1
+
+# Artifacts Service configuration
+artifactsService:
+  enabled: true
+  image:
+    repository: ghcr.io/csu-itmo-2025-2/team7-artifacts-service
+    tag: "latest"
+  service:
+    port: 8000
+    nodePort: 30001
+  replicas: 1
+
+# Core Service Frontend configuration
+coreServiceFrontend:
+  enabled: true
+  image:
+    repository: ghcr.io/csu-itmo-2025-2/team7-core-service-frontend
+    tag: "latest"
+  service:
+    port: 80
+    nodePort: 30080
+  replicas: 1
+
+ingress:
+  enabled: true
+  host: team7.kubepractice.ru
+  className: nginx
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: tls-secret
