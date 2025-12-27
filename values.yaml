@@ -167,12 +167,12 @@ kafka:
     tag: "4.1.1"  # Версия Kafka (поддерживаемые: 4.0.0, 4.0.1, 4.1.0, 4.1.1)
   # Настройки реплик для NodePools
   broker:
-    replicas: 3  # Количество брокеров (минимум 3 для production)
+    replicas: 1  # Уменьшено до 1 из-за ResourceQuota
   controller:
-    replicas: 3  # Количество контроллеров (3 для кворума)
+    replicas: 1  # Уменьшено до 1 из-за ResourceQuota
   # Cruise Control для автоматической ребалансировки при масштабировании
   cruiseControl:
-    enabled: true  # Включить Cruise Control (активируется при broker.replicas >= 2)
+    enabled: false  # Отключено из-за ResourceQuota (требует много ресурсов)
     resources:
       requests:
         cpu: 200m
@@ -184,33 +184,33 @@ kafka:
     autoRebalance:
       - mode: add-brokers  # Ребалансировка при добавлении брокеров
       - mode: remove-brokers  # Ребалансировка при удалении брокеров
-  # Настройки репликации для отказоустойчивости
-  minInSyncReplicas: 2  # Минимум 2 синхронизированные реплики для подтверждения записи
-  offsetsTopicReplicationFactor: 3  # Репликация системного топика offsets
-  transactionStateLogReplicationFactor: 3  # Репликация транзакционного лога
-  transactionStateLogMinIsr: 2  # Минимум ISR для транзакций
-  defaultReplicationFactor: 3  # Репликация по умолчанию для новых топиков
+  # Настройки репликации (уменьшены для 1 брокера)
+  minInSyncReplicas: 1  # Уменьшено для 1 брокера
+  offsetsTopicReplicationFactor: 1  # Уменьшено для 1 брокера
+  transactionStateLogReplicationFactor: 1  # Уменьшено для 1 брокера
+  transactionStateLogMinIsr: 1  # Уменьшено для 1 брокера
+  defaultReplicationFactor: 1  # Уменьшено для 1 брокера
   # Хранилище для Kafka
   storage:
     type: "ephemeral"  # ephemeral или persistent-claim (для production используйте persistent-claim)
     size: "10Gi"  # Используется только для persistent-claim
     class: ""  # Storage class (опционально)
-  # Ресурсы для Kafka брокеров
+  # Ресурсы для Kafka брокеров (уменьшены из-за ResourceQuota)
   resources:
     requests:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 200m
+      memory: 512Mi
     limits:
-      cpu: 750m  # Уменьшено для соответствия ResourceQuota (нужно место для entity-operator)
-      memory: 2Gi
+      cpu: 400m
+      memory: 1Gi
   # Дополнительные настройки Kafka
   logRetentionMs: 86400000  # Время хранения логов (1 день)
   logSegmentBytes: 1073741824  # Размер сегмента лога (1Gi)
   # Топики для создания
   topics:
     name: "events"
-    partitions: 6  # Больше партиций для лучшего распределения нагрузки
-    replicas: 3  # Репликация на все 3 брокера
+    partitions: 3  # Уменьшено для 1 брокера
+    replicas: 1  # Уменьшено для 1 брокера
     retentionMs: 86400000  # 1 день
     segmentBytes: 1073741824  # 1Gi
   users:
