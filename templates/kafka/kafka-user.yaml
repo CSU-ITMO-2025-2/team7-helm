@@ -1,3 +1,4 @@
+{{- if and .Values.kafka.enabled .Values.externalSecret.enabled .Values.externalSecret.kafka.enabled }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaUser
 metadata:
@@ -11,7 +12,7 @@ spec:
     password:
       valueFrom:
         secretKeyRef:
-          name: KAFKA_USERNAME
+          name: {{ include "flask-app.fullname" . }}-secret-kafka
           key: KAFKA_PASSWORD
   authorization:
     type: simple

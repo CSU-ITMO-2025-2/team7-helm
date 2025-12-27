@@ -196,8 +196,10 @@ kafka:
     retentionMs: 86400000  # 1 день
     segmentBytes: 1073741824  # 1Gi
   users:
-    username: "KAFKA_USERNAME"
-    secretKey: "KAFKA_PASSWORD"
+    # Имя пользователя Kafka (должно соответствовать значению KAFKA_USERNAME из секрета)
+    # Это значение должно совпадать с тем, что хранится в Vault в kv/data/team7/kafka -> KAFKA_USERNAME
+    username: producer  # Замените на реальное имя пользователя из секрета
+    secretKey: "KAFKA_PASSWORD"  # Не используется напрямую, пароль берется из секрета
 # Конфигурация приложения для работы с Kafka
 app:
   kafka:
