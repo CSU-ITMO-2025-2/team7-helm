@@ -91,7 +91,8 @@ kafka:
         cpu: "500m"
         memory: "1Gi"
     autoRebalance:
-      enabled: false
+      - mode: add-brokers  # Ребалансировка при добавлении брокеров
+      - mode: remove-brokers  # Ребалансировка при удалении брокеров
 
 # Kafka UI configuration
 kafkaUI:
