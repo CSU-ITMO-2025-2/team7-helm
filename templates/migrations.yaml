@@ -1,0 +1,56 @@
+{{- if .Values.migrations.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-migrations
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrations
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: migrations
+    spec:
+      restartPolicy: {{ .Values.migrations.restartPolicy }}
+      containers:
+      - name: migrations
+        image: "{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag }}"
+        env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_HOST
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_PORT
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_DATABASE
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+  backoffLimit: 3
+{{- end }}
+

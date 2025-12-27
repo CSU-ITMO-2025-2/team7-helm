@@ -1,0 +1,57 @@
+{{- if .Values.coreServiceFrontend.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-core-service-frontend
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: core-service-frontend
+spec:
+  type: NodePort
+  ports:
+    - port: {{ .Values.coreServiceFrontend.service.port }}
+      targetPort: 80
+      nodePort: {{ .Values.coreServiceFrontend.service.nodePort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: core-service-frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-core-service-frontend
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: core-service-frontend
+spec:
+  replicas: {{ .Values.coreServiceFrontend.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: core-service-frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: core-service-frontend
+    spec:
+      containers:
+      - name: core-service-frontend
+        image: "{{ .Values.coreServiceFrontend.image.repository }}:{{ .Values.coreServiceFrontend.image.tag }}"
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+{{- end }}
+

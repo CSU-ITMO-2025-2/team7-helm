@@ -1,0 +1,86 @@
+{{- if .Values.trainService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-train-service
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: train-service
+spec:
+  type: NodePort
+  ports:
+    - port: {{ .Values.trainService.service.port }}
+      targetPort: 8005
+      nodePort: {{ .Values.trainService.service.nodePort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: train-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-train-service
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: train-service
+spec:
+  replicas: {{ .Values.trainService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: train-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: train-service
+    spec:
+      initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z {{ include "team7-helm.fullname" . }}-kafka 9092; do
+            echo "Waiting for kafka..."
+            sleep 2
+          done
+      containers:
+      - name: train-service
+        image: "{{ .Values.trainService.image.repository }}:{{ .Values.trainService.image.tag }}"
+        ports:
+        - containerPort: 8005
+          name: http
+        env:
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-jwt-secrets
+              key: JWT_SECRET
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+              key: KAFKA_BOOTSTRAP_SERVERS
+        - name: KAFKA_TOPIC_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+              key: KAFKA_TOPIC_NAME
+        - name: CORE_BASE_URL
+          value: "http://{{ include "team7-helm.fullname" . }}-core-service:8000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+{{- end }}
+

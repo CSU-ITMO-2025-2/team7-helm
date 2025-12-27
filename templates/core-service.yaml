@@ -1,0 +1,127 @@
+{{- if .Values.coreService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-core-service
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: core-service
+spec:
+  type: NodePort
+  ports:
+    - port: {{ .Values.coreService.service.port }}
+      targetPort: 8000
+      nodePort: {{ .Values.coreService.service.nodePort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: core-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-core-service
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: core-service
+spec:
+  replicas: {{ .Values.coreService.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: core-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: core-service
+    spec:
+      initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z {{ include "team7-helm.fullname" . }}-kafka 9092; do
+            echo "Waiting for kafka..."
+            sleep 2
+          done
+      containers:
+      - name: core-service
+        image: "{{ .Values.coreService.image.repository }}:{{ .Values.coreService.image.tag }}"
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_HOST
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_PORT
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: POSTGRES_DATABASE
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-jwt-secrets
+              key: JWT_SECRET
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+              key: KAFKA_BOOTSTRAP_SERVERS
+        - name: KAFKA_TOPIC_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+              key: KAFKA_TOPIC_NAME
+        - name: ARTIFACTS_SERVICE_URL
+          value: "http://{{ include "team7-helm.fullname" . }}-artifacts-service:8000"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+{{- end }}
+
