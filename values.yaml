@@ -216,14 +216,14 @@ kafkaUi:
     repository: provectus/kafka-ui
     tag: "latest"
     pullPolicy: IfNotPresent
-  # Ресурсы для Kafka UI
+  # Ресурсы для Kafka UI (уменьшены для соответствия квоте)
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 50m
+      memory: 128Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 200m
+      memory: 256Mi
   # Настройки сервиса
   service:
     type: ClusterIP
