@@ -11,26 +11,14 @@ spec:
     password:
       valueFrom:
         secretKeyRef:
-          name: {{ .Values.kafka.credentialsSecretName }}
-          key: {{ .Values.kafka.users.producer.secretKey }}
+          name: "KAFKA_USERNAME"
+          key: "KAFKA_PASSWORD"
   authorization:
     type: simple
     acls:
       - resource:
           type: topic
-          name: {{ .Values.kafka.topics.rawReviews.name }}
+          name: {{ .Values.kafka.topics.name }}
           patternType: literal
         operations: [Read, Write, Create, Describe]
-        host: "*"
-      - resource:
-          type: topic
-          name: raw_reviews
-          patternType: literal
-        operations: [Read, Write, Create, Describe]
-        host: "*"
-      - resource:
-          type: group
-          name: producer-group
-          patternType: literal
-        operations: [Read, Describe]
         host: "*"
