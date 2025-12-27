@@ -2,7 +2,7 @@
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
-  name: controller
+  name: kafka-controller
   namespace: {{ .Release.Namespace }}
   labels:
     strimzi.io/cluster: {{ .Values.kafka.clusterName }}
@@ -29,7 +29,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
-  name: broker
+  name: kafka-broker
   namespace: {{ .Release.Namespace }}
   labels:
     strimzi.io/cluster: {{ .Values.kafka.clusterName }}
@@ -76,11 +76,11 @@ spec:
         type: internal
         tls: true
     config:
-      offsets.topic.replication.factor: {{ .Values.kafka.offsetsTopicReplicationFactor }}
-      transaction.state.log.replication.factor: {{ .Values.kafka.transactionStateLogReplicationFactor }}
-      transaction.state.log.min.isr: {{ .Values.kafka.transactionStateLogMinIsr }}
-      default.replication.factor: {{ .Values.kafka.defaultReplicationFactor }}
-      min.insync.replicas: {{ .Values.kafka.minInSyncReplicas }}
+      offsets.topic.replication.factor: {{ .Values.kafka.offsetsTopicReplicationFactor | quote }}
+      transaction.state.log.replication.factor: {{ .Values.kafka.transactionStateLogReplicationFactor | quote }}
+      transaction.state.log.min.isr: {{ .Values.kafka.transactionStateLogMinIsr | quote }}
+      default.replication.factor: {{ .Values.kafka.defaultReplicationFactor | quote }}
+      min.insync.replicas: {{ .Values.kafka.minInSyncReplicas | quote }}
       log.retention.ms: {{ .Values.kafka.logRetentionMs | int64 }}
       log.segment.bytes: {{ .Values.kafka.logSegmentBytes | int64 }}
   entityOperator:
