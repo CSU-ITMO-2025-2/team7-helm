@@ -11,8 +11,8 @@ spec:
     password:
       valueFrom:
         secretKeyRef:
-          name: "KAFKA_USERNAME"
-          key: "KAFKA_PASSWORD"
+          name: KAFKA_USERNAME
+          key: KAFKA_PASSWORD
   authorization:
     type: simple
     acls:
