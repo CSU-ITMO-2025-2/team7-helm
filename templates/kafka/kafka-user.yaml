@@ -1,4 +1,4 @@
-{{- if .Values.kafka.enabled }}
+{{- if .Values.app.kafka.enabled }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaUser
 metadata:
@@ -19,7 +19,7 @@ spec:
     acls:
       - resource:
           type: topic
-          name: {{ .Values.kafka.topics.name }}
+          name: {{ .Values.app.kafka.topic }}
           patternType: literal
         operations: [Read, Write, Create, Describe]
         host: "*"

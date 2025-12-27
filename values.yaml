@@ -160,8 +160,8 @@ externalSecret:
 # Kafka configuration через Strimzi Operator
 # Используется Apache Kafka в режиме KRaft (без Zookeeper)
 kafka:
-  enabled: true
-  clusterName: "kafka-cluster"  # Имя кластера Kafka (используется в strimzi.io/cluster label)
+  enabled: false  # Отключаем - используем существующий кластер team7-kafka
+  clusterName: "team7-kafka"  # Используем существующий кластер
   image:
     # В Strimzi образ управляется оператором, версия указывается отдельно
     tag: "4.1.1"  # Версия Kafka (поддерживаемые: 4.0.0, 4.0.1, 4.1.0, 4.1.1)
@@ -208,9 +208,10 @@ kafka:
   logSegmentBytes: 1073741824  # Размер сегмента лога (1Gi)
   # Топики для создания
   topics:
-    name: "events"
-    partitions: 3  # Уменьшено для 1 брокера
-    replicas: 1  # Уменьшено для 1 брокера
+    create: false  # Топик runs уже существует
+    name: "runs"
+    partitions: 1
+    replicas: 1
     retentionMs: 86400000  # 1 день
     segmentBytes: 1073741824  # 1Gi
   users:
@@ -223,9 +224,9 @@ app:
   kafka:
     enabled: true
     # Имя сервиса Kafka формируется как <release-name>-kafka:9092
-    # Оставьте пустым для автоматического определения
-    bootstrapServers: "kafka-cluster-kafka-bootstrap:9092"  # Оставьте пустым для автоматического определения, или укажите явно
-    topic: "events"  # Топик по умолчанию
+    # Используем существующий кластер team7-kafka
+    bootstrapServers: "team7-kafka-kafka-bootstrap:9092"  # Существующий Kafka кластер
+    topic: "runs"  # Используем существующий топик
     consumerGroup: "flask-app-consumer"  # Consumer group ID
 
 # Kafka UI для визуального управления Kafka кластером
@@ -251,8 +252,8 @@ kafkaUi:
   # Настройки подключения к Kafka
   kafka:
     # Bootstrap server для Strimzi Kafka
-    # По умолчанию: kafka-cluster-kafka-bootstrap:9092
-    bootstrapServers: "kafka-cluster-kafka-bootstrap:9092"
+    # Используем существующий кластер team7-kafka
+    bootstrapServers: "team7-kafka-kafka-bootstrap:9092"
     # Название кластера в UI
     clusterName: "team7-kafka"
     # SCRAM-SHA-512 аутентификация (credentials берутся из externalSecret.kafka)
