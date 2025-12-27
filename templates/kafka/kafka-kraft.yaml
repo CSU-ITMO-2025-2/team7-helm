@@ -58,10 +58,7 @@ metadata:
   name: {{ .Values.kafka.clusterName }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    {{- if .Values.kafka.cruiseControl.enabled }}
-    # Включение автоматической ребалансировки при масштабировании
     strimzi.io/node-pools: enabled
-    {{- end }}
 spec:
   kafka:
     version: {{ .Values.kafka.image.tag }}
@@ -103,8 +100,8 @@ spec:
         limits:
           cpu: 200m
           memory: 512Mi
-  {{- if .Values.kafka.cruiseControl.enabled }}
-  # Cruise Control для автоматической ребалансировки и оптимизации кластера
+  {{- if and .Values.kafka.cruiseControl.enabled (ge (int .Values.kafka.broker.replicas) 2) }}
+  # Cruise Control для автоматической ребалансировки (требует минимум 2 брокера)
   cruiseControl:
     resources:
       requests:
