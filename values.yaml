@@ -233,8 +233,8 @@ kafkaUi:
   # Настройки подключения к Kafka
   kafka:
     # Bootstrap server для Strimzi Kafka
-    # По умолчанию: my-cluster-kafka-bootstrap:9092
-    bootstrapServers: "my-cluster-kafka-bootstrap:9092"
+    # По умолчанию: kafka-cluster-kafka-bootstrap:9092
+    bootstrapServers: "kafka-cluster-kafka-bootstrap:9092"
     # Название кластера в UI
     clusterName: "team7-kafka"
     # SCRAM-SHA-512 аутентификация (credentials берутся из externalSecret.kafka)
