@@ -1,4 +1,3 @@
-{{- if .Values.kafka.enabled }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
