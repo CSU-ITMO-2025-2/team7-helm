@@ -13,72 +13,59 @@ spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
-  {{- if .Values.ingress.tls }}
-  tls:
-    {{- range .Values.ingress.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
-  {{- else if .Values.ingress.hosts }}
+  {{- if and .Values.ingress.tls .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        {{- range .Values.ingress.hosts }}
-        - {{ .host | quote }}
-        {{- end }}
-      secretName: {{ include "team7-helm.fullname" . }}-tls
+        - {{ .Values.ingress.host | quote }}
+      secretName: {{ .Values.ingress.tls.secretName }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-          {{- if $.Values.coreServiceFrontend.enabled }}
+          {{- if .Values.coreServiceFrontend.enabled }}
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ include "team7-helm.fullname" $ }}-core-service-frontend
+                name: {{ include "team7-helm.fullname" . }}-core-service-frontend
                 port:
-                  number: {{ $.Values.coreServiceFrontend.service.port }}
+                  number: {{ .Values.coreServiceFrontend.service.port }}
           {{- end }}
-          {{- if $.Values.coreService.enabled }}
+          {{- if .Values.coreService.enabled }}
           - path: /api
             pathType: Prefix
             backend:
               service:
-                name: {{ include "team7-helm.fullname" $ }}-core-service
+                name: {{ include "team7-helm.fullname" . }}-core-service
                 port:
-                  number: {{ $.Values.coreService.service.port }}
+                  number: {{ .Values.coreService.service.port }}
           {{- end }}
-          {{- if $.Values.trainService.enabled }}
+          {{- if .Values.trainService.enabled }}
           - path: /train
             pathType: Prefix
             backend:
               service:
-                name: {{ include "team7-helm.fullname" $ }}-train-service
+                name: {{ include "team7-helm.fullname" . }}-train-service
                 port:
-                  number: {{ $.Values.trainService.service.port }}
+                  number: {{ .Values.trainService.service.port }}
           {{- end }}
-          {{- if $.Values.artifactsService.enabled }}
+          {{- if .Values.artifactsService.enabled }}
           - path: /artifacts
             pathType: Prefix
             backend:
               service:
-                name: {{ include "team7-helm.fullname" $ }}-artifacts-service
+                name: {{ include "team7-helm.fullname" . }}-artifacts-service
                 port:
-                  number: {{ $.Values.artifactsService.service.port }}
+                  number: {{ .Values.artifactsService.service.port }}
           {{- end }}
-          {{- if $.Values.kafkaUI.enabled }}
+          {{- if .Values.kafkaUI.enabled }}
           - path: /kafka-ui
             pathType: Prefix
             backend:
               service:
-                name: {{ include "team7-helm.fullname" $ }}-kafka-ui
+                name: {{ include "team7-helm.fullname" . }}-kafka-ui
                 port:
-                  number: {{ $.Values.kafkaUI.service.port }}
+                  number: {{ .Values.kafkaUI.service.port }}
           {{- end }}
-    {{- end }}
 {{- end }}
