@@ -26,11 +26,6 @@ metadata:
   labels:
     {{- include "team7-helm.labels" . | nindent 4 }}
     app.kubernetes.io/component: core-service
-  annotations:
-    argocd-image-updater.argoproj.io/image-list: core-service={{ .Values.coreService.image.repository }}
-    argocd-image-updater.argoproj.io/core-service.update-strategy: digest
-    argocd-image-updater.argoproj.io/core-service.allow-tags: regexp:^latest$
-    argocd-image-updater.argoproj.io/core-service.force-update: "true"
 spec:
   replicas: {{ .Values.coreService.replicas }}
   selector:

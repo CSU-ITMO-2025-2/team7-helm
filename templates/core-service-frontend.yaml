@@ -26,11 +26,6 @@ metadata:
   labels:
     {{- include "team7-helm.labels" . | nindent 4 }}
     app.kubernetes.io/component: core-service-frontend
-  annotations:
-    argocd-image-updater.argoproj.io/image-list: frontend={{ .Values.coreServiceFrontend.image.repository }}
-    argocd-image-updater.argoproj.io/frontend.update-strategy: digest
-    argocd-image-updater.argoproj.io/frontend.allow-tags: regexp:^latest$
-    argocd-image-updater.argoproj.io/frontend.force-update: "true"
 spec:
   replicas: {{ .Values.coreServiceFrontend.replicas }}
   selector:

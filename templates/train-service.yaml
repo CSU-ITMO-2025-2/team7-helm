@@ -26,11 +26,6 @@ metadata:
   labels:
     {{- include "team7-helm.labels" . | nindent 4 }}
     app.kubernetes.io/component: train-service
-  annotations:
-    argocd-image-updater.argoproj.io/image-list: train-service={{ .Values.trainService.image.repository }}
-    argocd-image-updater.argoproj.io/train-service.update-strategy: digest
-    argocd-image-updater.argoproj.io/train-service.allow-tags: regexp:^latest$
-    argocd-image-updater.argoproj.io/train-service.force-update: "true"
 spec:
   replicas: {{ .Values.trainService.replicas }}
   selector:
