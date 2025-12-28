@@ -81,6 +81,7 @@ kafka:
     segmentBytes: 1073741824  
   users:
     username: team7-kafka-user
+    groupId: train-service
   cruiseControl:
     enabled: true
     resources:
