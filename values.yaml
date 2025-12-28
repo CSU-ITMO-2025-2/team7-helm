@@ -208,8 +208,8 @@ kafka:
   logSegmentBytes: 1073741824  # Размер сегмента лога (1Gi)
   # Топики для создания
   topics:
-    create: false  # Топик runs уже существует
-    name: "runs"
+    create: true  # Включено для создания топика events
+    name: "events"
     partitions: 1
     replicas: 1
     retentionMs: 86400000  # 1 день

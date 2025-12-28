@@ -1,4 +1,4 @@
-{{- if and .Values.kafka.enabled .Values.kafka.topics.create }}
+{{- if .Values.kafka.topics.create }}
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaTopic
 metadata:
