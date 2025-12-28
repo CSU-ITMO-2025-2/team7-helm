@@ -17,7 +17,7 @@ spec:
   tls:
     - hosts:
         - {{ .Values.ingress.host | quote }}
-      secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (include "team7-helm.fullname" .)) }}
+      secretName: {{ .Values.ingress.tls.secretName }}
   {{- end }}
   rules:
     - host: {{ .Values.ingress.host | quote }}

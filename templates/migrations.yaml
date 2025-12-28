@@ -44,6 +44,11 @@ spec:
             secretKeyRef:
               name: {{ include "team7-helm.fullname" . }}-postgres-secrets
               key: POSTGRES_DATABASE
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-postgres-secrets
+              key: DATABASE_URL
         resources:
           requests:
             memory: "128Mi"
