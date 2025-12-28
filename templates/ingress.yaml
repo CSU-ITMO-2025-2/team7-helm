@@ -59,13 +59,4 @@ spec:
                 port:
                   number: {{ .Values.artifactsService.service.port }}
           {{- end }}
-          {{- if .Values.kafkaUI.enabled }}
-          - path: /kafka-ui
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "team7-helm.fullname" . }}-kafka-ui
-                port:
-                  number: {{ .Values.kafkaUI.service.port }}
-          {{- end }}
 {{- end }}
