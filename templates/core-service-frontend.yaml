@@ -46,9 +46,6 @@ spec:
         ports:
         - containerPort: 80
           name: http
-        env:
-        - name: VITE_API_BASE
-          value: "http://{{ include "team7-helm.fullname" . }}-core-service:{{ .Values.coreService.service.port }}"
         resources:
           requests:
             memory: "128Mi"

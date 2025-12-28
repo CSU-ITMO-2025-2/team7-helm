@@ -65,7 +65,7 @@ spec:
         - containerPort: 8005
           name: http
         env:
-        - name: JWT_SECRET
+        - name: CORE_JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: {{ include "team7-helm.fullname" . }}-jwt-secrets
