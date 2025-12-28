@@ -1,0 +1,117 @@
+{{- if .Values.redpanda.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-redpanda-console
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redpanda-console
+spec:
+  type: NodePort
+  ports:
+    - port: {{ .Values.redpanda.service.port }}
+      targetPort: 8080
+      nodePort: {{ .Values.redpanda.service.nodePort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: redpanda-console
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-redpanda-console
+  labels:
+    {{- include "team7-helm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redpanda-console
+spec:
+  replicas: {{ .Values.redpanda.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: redpanda-console
+  template:
+    metadata:
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+      labels:
+        app.kubernetes.io/name: {{ include "team7-helm.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: redpanda-console
+    spec:
+      initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z {{ include "team7-helm.fullname" . }}-kafka-kafka-bootstrap  9092; do
+            echo "Waiting for kafka..."
+            sleep 2
+          done
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+      containers:
+      - name: redpanda-console
+        image: "{{ .Values.redpanda.image.repository }}:{{ .Values.redpanda.image.tag }}"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: KAFKA_BROKERS
+          value: {{ include "team7-helm.fullname" . }}-kafka-kafka-bootstrap:9092
+        - name: KAFKA_SECURITY_PROTOCOL
+          value: {{ .Values.redpanda.kafka.securityProtocol }}
+        - name: KAFKA_SASL_MECHANISM
+          value: {{ .Values.redpanda.kafka.saslMechanism }}
+        - name: KAFKA_SASL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+              key: KAFKA_USERNAME
+        - name: KAFKA_SASL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+              key: KAFKA_PASSWORD
+        - name: CONFIG_FILEPATH
+          value: "/tmp/config.yml"
+        - name: CONSOLE_SERVER_LISTENADDRESS
+          value: "0.0.0.0"
+        - name: CONSOLE_SERVER_LISTENPORT
+          value: "8080"
+        livenessProbe:
+          httpGet:
+            path: /api/status
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/status
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: {{ .Values.redpanda.resources.requests.memory }}
+            cpu: {{ .Values.redpanda.resources.requests.cpu | quote }}
+          limits:
+            memory: {{ .Values.redpanda.resources.limits.memory }}
+            cpu: {{ .Values.redpanda.resources.limits.cpu | quote }}
+{{- end }}
+
