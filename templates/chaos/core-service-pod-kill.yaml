@@ -1,7 +1,7 @@
 apiVersion: chaos-mesh.org/v1alpha1
 kind: PodChaos
 metadata:
-  name: core-service-pod-kill
+  name: {{ include "team7-helm.fullname" . }}-core-service-pod-kill
   namespace: team7-ns
 spec:
   action: pod-kill

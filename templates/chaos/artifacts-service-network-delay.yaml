@@ -1,7 +1,7 @@
 apiVersion: chaos-mesh.org/v1alpha1
 kind: NetworkChaos
 metadata:
-  name: artifacts-service-delay
+  name: {{ include "team7-helm.fullname" . }}-artifacts-service-delay
   namespace: team7-ns
 spec:
   action: delay
