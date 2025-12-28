@@ -120,6 +120,18 @@ spec:
             secretKeyRef:
               name: {{ include "team7-helm.fullname" . }}-kafka-secrets
               key: KAFKA_TOPIC_NAME
+        - name: KAFKA_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+              key: KAFKA_USERNAME
+        - name: KAFKA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
+              key: KAFKA_PASSWORD
+        - name: KAFKA_SECURITY_PROTOCOL
+          value: "SASL_PLAINTEXT"
         livenessProbe:
           tcpSocket:
             port: 8000
