@@ -35,6 +35,8 @@ spec:
       app.kubernetes.io/component: train-service
   template:
     metadata:
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
       labels:
         app.kubernetes.io/name: {{ include "team7-helm.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
