@@ -75,7 +75,7 @@ kafka:
   logSegmentBytes: 1073741824  
   topics:
     name: runs
-    partitions: 1
+    partitions: 3
     replicas: 1
     retentionMs: 86400000  
     segmentBytes: 1073741824  
@@ -157,6 +157,12 @@ trainService:
     port: 8005
     nodePort: 30005
   replicas: 1
+  hpa:
+    enabled: true
+    minReplicas: 1
+    # maxReplicas is automatically set to kafka.topics.partitions
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
 
 # Artifacts Service configuration
 artifactsService:
