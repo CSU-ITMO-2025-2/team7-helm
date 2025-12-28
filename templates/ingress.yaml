@@ -59,4 +59,13 @@ spec:
                 port:
                   number: {{ .Values.coreServiceFrontend.service.port }}
           {{- end }}
+          {{- if .Values.coreService.enabled }}
+          - path: /datasets
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "team7-helm.fullname" . }}-artifacts-service
+                port:
+                  number: {{ .Values.artifactsService.service.port }}
+          {{- end }}
 {{- end }}
