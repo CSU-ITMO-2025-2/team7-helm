@@ -47,7 +47,7 @@ spec:
         - sh
         - -c
         - |
-          until nc -z {{ include "team7-helm.fullname" . }}-kafka 9092; do
+          until nc -z {{ include "team7-helm.fullname" . }}-kafka-kafka-bootstrap  9092; do
             echo "Waiting for kafka..."
             sleep 2
           done
