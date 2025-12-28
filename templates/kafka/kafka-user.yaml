@@ -17,20 +17,30 @@ spec:
   authorization:
     type: simple
     acls:
+      # Права на топик
       - resource:
           type: topic
           name: {{ .Values.kafka.topics.name | quote }}
           patternType: literal
-        operations: [Read, Write, Create, Describe]
+        operations: [Read, Write, Create, Describe, Delete]
         host: "*"
+      # Права на все consumer groups (wildcard)
       - resource:
           type: group
-          name: "train-service"
+          name: "*"
           patternType: literal
-        operations: [Read, Describe, Create]
+        operations: [Read, Describe, Create, Delete]
         host: "*"
+      # Права на кластер
       - resource:
           type: cluster
-        operations: [Describe]
+        operations: [Describe, Create]
+        host: "*"
+      # Права на транзакции (на всякий случай)
+      - resource:
+          type: transactionalId
+          name: "*"
+          patternType: literal
+        operations: [Describe, Write]
         host: "*"
 {{- end }}
