@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "team7-helm.fullname" . }}-migrations-{{ randAlphaNum 5 | lower }}
+  name: {{ include "team7-helm.fullname" . }}-migrations
   labels:
     {{- include "team7-helm.labels" . | nindent 4 }}
     app.kubernetes.io/component: migrations
