@@ -84,12 +84,6 @@ spec:
             secretKeyRef:
               name: {{ include "team7-helm.fullname" . }}-kafka-secrets
               key: KAFKA_PASSWORD
-        - name: CONFIG_FILEPATH
-          value: "/tmp/config.yml"
-        - name: CONSOLE_SERVER_LISTENADDRESS
-          value: "0.0.0.0"
-        - name: CONSOLE_SERVER_LISTENPORT
-          value: "8080"
         livenessProbe:
           httpGet:
             path: /api/status
