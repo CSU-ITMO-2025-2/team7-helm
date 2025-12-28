@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "team7-helm.fullname" . }}-chaos-yamls"
+  namespace: team7-ns
+data:
+  core-service-pod-kill.yaml: |
+    apiVersion: chaos-mesh.org/v1alpha1
+    kind: PodChaos
+    metadata:
+      name: core-service-pod-kill
+      namespace: team7-ns
+    spec:
+      action: pod-kill
+      mode: one
+      selector:
+        namespaces:
+          - team7-ns
+        labelSelectors:
+          "app.kubernetes.io/component": "core-service"
+      duration: "30s"

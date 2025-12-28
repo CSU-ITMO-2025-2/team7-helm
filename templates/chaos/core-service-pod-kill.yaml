@@ -1,0 +1,16 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: core-service-pod-kill
+  namespace: team7-ns
+spec:
+  action: pod-kill
+  mode: one
+  selector:
+    namespaces:
+      - team7-ns
+    labelSelectors:
+      "app.kubernetes.io/component": "core-service"
+  duration: "30s"
+  scheduler:
+    cron: "@every 1m"

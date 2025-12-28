@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "team7-helm.fullname" . }}-chaos-test-core"
+  namespace: team7-ns
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+  - name: chaos-test
+    image: bitnami/kubectl:1.29
+    command:
+      - /bin/sh
+      - -c
+      - |
+        echo "Applying Chaos Mesh experiment..."
+        kubectl apply -f /chaos/core-service-pod-kill.yaml
+        echo "Sleeping during experiment..."
+        sleep 60
+        echo "Deleting experiment..."
+        kubectl delete -f /chaos/core-service-pod-kill.yaml
+        echo "Chaos test completed."
+    volumeMounts:
+      - name: chaos-yamls
+        mountPath: /chaos
+  volumes:
+    - name: chaos-yamls
+      configMap:
+        name: "{{ include "team7-helm.fullname" . }}-chaos-yamls"

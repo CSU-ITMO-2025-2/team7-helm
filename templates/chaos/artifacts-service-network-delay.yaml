@@ -1,0 +1,20 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: artifacts-service-delay
+  namespace: team7-ns
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - team7-ns
+    labelSelectors:
+      "app.kubernetes.io/component": "artifacts-service"
+  delay:
+    latency: "200ms"
+    correlation: "50"
+    jitter: "10ms"
+  duration: "1m"
+  scheduler:
+    cron: "@every 2m"
