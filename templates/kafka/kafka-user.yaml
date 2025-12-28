@@ -9,11 +9,6 @@ metadata:
 spec:
   authentication:
     type: scram-sha-512
-    password:
-      valueFrom:
-        secretKeyRef:
-          name: {{ include "team7-helm.fullname" . }}-kafka-secrets
-          key: KAFKA_PASSWORD
   authorization:
     type: simple
     acls:

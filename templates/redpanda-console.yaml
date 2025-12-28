@@ -75,15 +75,12 @@ spec:
         - name: KAFKA_SASL_MECHANISM
           value: {{ .Values.redpanda.kafka.saslMechanism }}
         - name: KAFKA_SASL_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
-              key: KAFKA_USERNAME
+          value: {{ .Values.kafka.users.username | quote }}
         - name: KAFKA_SASL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "team7-helm.fullname" . }}-kafka-secrets
-              key: KAFKA_PASSWORD
+              name: {{ .Values.kafka.users.username }}
+              key: password
         livenessProbe:
           httpGet:
             path: /api/status
