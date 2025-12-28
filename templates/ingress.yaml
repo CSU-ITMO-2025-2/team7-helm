@@ -68,4 +68,13 @@ spec:
                 port:
                   number: {{ .Values.artifactsService.service.port }}
           {{- end }}
+          {{- if .Values.kafka.enabled }}
+          - path: /kafka-brokers
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "team7-helm.fullname" . }}-kafka-kafka-bootstrap
+                port:
+                  number: {{ .Values.kafka.service.port }}
+            {{- end }}
 {{- end }}
