@@ -23,15 +23,6 @@ spec:
     - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-          {{- if .Values.coreServiceFrontend.enabled }}
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "team7-helm.fullname" . }}-core-service-frontend
-                port:
-                  number: {{ .Values.coreServiceFrontend.service.port }}
-          {{- end }}
           {{- if .Values.coreService.enabled }}
           - path: /api
             pathType: Prefix
@@ -58,5 +49,14 @@ spec:
                 name: {{ include "team7-helm.fullname" . }}-artifacts-service
                 port:
                   number: {{ .Values.artifactsService.service.port }}
+          {{- end }}
+          {{- if .Values.coreServiceFrontend.enabled }}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "team7-helm.fullname" . }}-core-service-frontend
+                port:
+                  number: {{ .Values.coreServiceFrontend.service.port }}
           {{- end }}
 {{- end }}
