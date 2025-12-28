@@ -107,7 +107,7 @@ kafkaUI:
 
 # RedPanda Console configuration
 redpanda:
-  enabled: true
+  enabled: false
   image:
     repository: docker.redpanda.com/redpandadata/console
     tag: "v2.4.0"
