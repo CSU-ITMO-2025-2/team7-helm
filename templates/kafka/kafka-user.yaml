@@ -23,4 +23,10 @@ spec:
           patternType: literal
         operations: [Read, Write, Create, Describe]
         host: "*"
+      - resource:
+          type: group
+          name: "train-service"
+          patternType: literal
+        operations: [Read, Describe]
+        host: "*"
 {{- end }}
