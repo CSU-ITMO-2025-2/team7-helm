@@ -69,7 +69,7 @@ spec:
           name: http
         env:
         - name: KAFKA_BROKERS
-          value: {{ include "team7-helm.fullname" . }}-kafka-kafka-bootstrap:9092
+          value: {{ include "team7-helm.fullname" . }}-kafka-kafka-brokers:9092
         - name: KAFKA_SECURITY_PROTOCOL
           value: {{ .Values.redpanda.kafka.securityProtocol }}
         - name: KAFKA_SASL_MECHANISM
