@@ -206,3 +206,26 @@ kubectl describe externalsecret team7-helm-secrets
 - Zookeeper: `{release-name}-zookeeper:2181`
 
 Где `{release-name}` - это имя, указанное при установке Helm-чарта.
+
+### Chaos Engineering
+
+Добавлены сценарии для проверки устойчивости сервиса к сбоям.
+
+Для входа в Chaos Dashboard (https://chaos-mesh.kubepractice.ru/) создать токен
+- kubectl create token team7-sa -n team7-ns
+
+
+Проверка отказоустойчивости core-service (PodChaos) 
+
+Удаляет один под core-service и проверяет, что он восстановится
+- kubectl apply -f chaos/core-service-pod-kill.yaml
+
+
+Проверка сетевой задержки artifacts-service (NetworkChaos)
+
+Имитация задержки сети между сервисами
+- kubectl apply -f chaos/artifacts-service-network-delay.yaml
+
+Удаление
+- kubectl delete -f chaos/core-service-pod-kill.yaml
+- kubectl delete -f chaos/artifacts-service-network-delay.yaml
