@@ -92,6 +92,8 @@ spec:
               key: KAFKA_PASSWORD
         - name: KAFKA_SECURITY_PROTOCOL
           value: "SASL_PLAINTEXT"
+        - name: KAFKA_SASL_MECHANISM
+          value: "SCRAM-SHA-512"
         - name: CORE_BASE_URL
           value: "http://{{ include "team7-helm.fullname" . }}-core-service:8000"
         - name: S3_BUCKET
