@@ -3,3 +3,4 @@ docker-compose.yaml
 .gitignore
 env.example
 team7-kubeconfig.yaml
+redpanda.ps1

@@ -73,7 +73,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "team7-helm.fullname" . }}-kafka-kafka-bootstrap
+                name: {{ include "team7-helm.fullname" . }}-kafka-kafka-brokers
                 port:
                   number: {{ .Values.kafka.service.port }}
             {{- end }}
