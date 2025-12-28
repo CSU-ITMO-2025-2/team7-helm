@@ -106,7 +106,7 @@ kafkaUI:
 
 # Migrations configuration
 migrations:
-  enabled: true
+  enabled: false
   image:
     repository: ghcr.io/csu-itmo-2025-2/team7-migrations
     tag: "latest"
