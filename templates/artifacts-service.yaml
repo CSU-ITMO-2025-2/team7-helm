@@ -26,6 +26,11 @@ metadata:
   labels:
     {{- include "team7-helm.labels" . | nindent 4 }}
     app.kubernetes.io/component: artifacts-service
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: artifacts-service={{ .Values.artifactsService.image.repository }}
+    argocd-image-updater.argoproj.io/artifacts-service.update-strategy: digest
+    argocd-image-updater.argoproj.io/artifacts-service.allow-tags: regexp:^latest$
+    argocd-image-updater.argoproj.io/artifacts-service.force-update: "true"
 spec:
   replicas: {{ .Values.artifactsService.replicas }}
   selector:
