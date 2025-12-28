@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: buldakovn/flask-app
+  repository: ghcr.io/csu-itmo-2025-2/team7-flask-m_app
   tag: "latest"
   pullPolicy: Always
 
