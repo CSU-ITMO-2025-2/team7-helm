@@ -118,16 +118,14 @@ spec:
               name: {{ include "team7-helm.fullname" . }}-kafka-secrets
               key: KAFKA_TOPIC_NAME
         livenessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
-          httpGet:
-            path: /health
+          tcpSocket:
             port: 8000
           initialDelaySeconds: 10
           periodSeconds: 5

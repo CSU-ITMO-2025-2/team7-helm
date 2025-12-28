@@ -79,6 +79,26 @@ spec:
               key: KAFKA_TOPIC_NAME
         - name: CORE_BASE_URL
           value: "http://{{ include "team7-helm.fullname" . }}-core-service:8000"
+        - name: S3_BUCKET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-s3-secrets
+              key: S3_BUCKET
+        - name: S3_ENDPOINT_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-s3-secrets
+              key: S3_ENDPOINT_URL
+        - name: S3_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-s3-secrets
+              key: S3_ACCESS_KEY_ID
+        - name: S3_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "team7-helm.fullname" . }}-s3-secrets
+              key: S3_SECRET_ACCESS_KEY
         resources:
           requests:
             memory: "256Mi"
