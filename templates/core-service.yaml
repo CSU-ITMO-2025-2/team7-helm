@@ -61,6 +61,7 @@ spec:
       containers:
       - name: core-service
         image: "{{ .Values.coreService.image.repository }}:{{ .Values.coreService.image.tag }}"
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
           name: http

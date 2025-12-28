@@ -61,6 +61,7 @@ spec:
       containers:
       - name: train-service
         image: "{{ .Values.trainService.image.repository }}:{{ .Values.trainService.image.tag }}"
+        imagePullPolicy: Always
         ports:
         - containerPort: 8005
           name: http

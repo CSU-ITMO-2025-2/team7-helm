@@ -43,6 +43,7 @@ spec:
       containers:
       - name: core-service-frontend
         image: "{{ .Values.coreServiceFrontend.image.repository }}:{{ .Values.coreServiceFrontend.image.tag }}"
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
           name: http

@@ -61,6 +61,7 @@ spec:
       containers:
       - name: artifacts-service
         image: "{{ .Values.artifactsService.image.repository }}:{{ .Values.artifactsService.image.tag }}"
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
           name: http
