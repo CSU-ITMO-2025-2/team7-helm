@@ -1,1 +1,5 @@
 team7-kubeconfig
+docker-compose.yaml
+.gitignore
+env.example
+team7-kubeconfig.yaml
