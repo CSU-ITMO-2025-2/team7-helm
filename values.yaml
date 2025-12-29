@@ -208,7 +208,7 @@ chaos:
         concurrencyPolicy: "Forbid"  # Forbid, Allow, Replace
       duration: "30s"
     artifactsServiceNetworkDelay:
-      enabled: true
+      enabled: false
       schedule:
         enabled: true  # Использует отдельный Schedule ресурс
         cron: "@every 60m"  # Запуск каждый час
