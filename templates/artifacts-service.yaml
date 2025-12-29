@@ -126,6 +126,8 @@ spec:
               key: password
         - name: KAFKA_SECURITY_PROTOCOL
           value: "SASL_PLAINTEXT"
+        - name: CORE_BASE_URL
+          value: "http://{{ include "team7-helm.fullname" . }}-core-service:8000"
         livenessProbe:
           tcpSocket:
             port: 8000

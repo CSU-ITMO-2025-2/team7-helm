@@ -90,6 +90,8 @@ spec:
           value: "SCRAM-SHA-512"
         - name: CORE_BASE_URL
           value: "http://{{ include "team7-helm.fullname" . }}-core-service:8000"
+        - name: ARTIFACTS_BASE_URL
+          value: "http://{{ include "team7-helm.fullname" . }}-artifacts-service:8000"
         - name: S3_BUCKET
           valueFrom:
             secretKeyRef:
