@@ -1,0 +1,22 @@
+{{- if and .Values.chaos.enabled .Values.chaos.experiments.trainServicePodKill.enabled .Values.chaos.experiments.trainServicePodKill.schedule.enabled }}
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-train-service-pod-kill-schedule
+  namespace: {{ .Values.global.namespace }}
+spec:
+  schedule: {{ .Values.chaos.experiments.trainServicePodKill.schedule.cron | quote }}
+  historyLimit: {{ .Values.chaos.experiments.trainServicePodKill.schedule.historyLimit | default 5 }}
+  concurrencyPolicy: {{ .Values.chaos.experiments.trainServicePodKill.schedule.concurrencyPolicy | default "Forbid" }}
+  type: PodChaos
+  podChaos:
+    action: pod-kill
+    mode: one
+    selector:
+      namespaces:
+        - {{ .Values.global.namespace }}
+      labelSelectors:
+        "app.kubernetes.io/component": "train-service"
+    duration: {{ .Values.chaos.experiments.trainServicePodKill.duration | quote }}
+{{- end }}
+

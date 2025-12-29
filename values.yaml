@@ -194,3 +194,60 @@ ingress:
   tls:
     enabled: false
     secretName: tls-secret
+
+# Chaos Engineering experiments configuration
+chaos:
+  enabled: true
+  experiments:
+    coreServicePodKill:
+      enabled: true
+      schedule:
+        enabled: true  # Использует отдельный Schedule ресурс
+        cron: "@every 5m"  # Запуск каждые 5 минут
+        # Примеры других расписаний:
+        # "@every 10m" - каждые 10 минут
+        # "0 */2 * * *" - каждые 2 часа
+        # "0 9 * * *" - каждый день в 9:00
+        # "0 9 * * 1-5" - каждый рабочий день в 9:00
+        historyLimit: 5  # Количество сохраняемых запусков в истории
+        concurrencyPolicy: "Forbid"  # Forbid, Allow, Replace
+      duration: "30s"
+    artifactsServiceNetworkDelay:
+      enabled: true
+      schedule:
+        enabled: true  # Использует отдельный Schedule ресурс
+        cron: "@every 1h"  # Запуск каждый час
+        historyLimit: 5  # Количество сохраняемых запусков в истории
+        concurrencyPolicy: "Forbid"  # Forbid, Allow, Replace
+      duration: "1m"
+      delay:
+        latency: "200ms"
+        correlation: "50"
+        jitter: "10ms"
+    trainServicePodKill:
+      enabled: false
+      schedule:
+        enabled: true
+        cron: "@every 10m"  # Запуск каждые 10 минут
+        historyLimit: 5
+        concurrencyPolicy: "Forbid"
+      duration: "30s"
+    coreServiceCpuStress:
+      enabled: false
+      schedule:
+        enabled: true
+        cron: "@every 15m"  # Запуск каждые 15 минут
+        historyLimit: 5
+        concurrencyPolicy: "Forbid"
+      duration: "2m"
+      cpu:
+        workers: 1
+        load: 100  # Процент загрузки CPU (0-100)
+    coreArtifactsNetworkPartition:
+      enabled: false
+      schedule:
+        enabled: true
+        cron: "@every 30m"  # Запуск каждые 30 минут
+        historyLimit: 5
+        concurrencyPolicy: "Forbid"
+      duration: "1m"

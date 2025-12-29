@@ -215,17 +215,166 @@ kubectl describe externalsecret team7-helm-secrets
 - kubectl create token team7-sa -n team7-ns
 
 
-Проверка отказоустойчивости core-service (PodChaos) 
+#### Настройка Chaos-экспериментов
 
-Удаляет один под core-service и проверяет, что он восстановится
-- kubectl apply -f chaos/core-service-pod-kill.yaml
+Chaos-эксперименты настраиваются через `values.yaml` в секции `chaos`. Все эксперименты используют отдельные ресурсы `Schedule` для управления расписанием:
 
+```yaml
+chaos:
+  enabled: true
+  experiments:
+    coreServicePodKill:
+      enabled: true
+      schedule:
+        enabled: true  # Использует отдельный Schedule ресурс
+        cron: "@every 5m"
+        historyLimit: 5  # Количество сохраняемых запусков
+        concurrencyPolicy: "Forbid"  # Forbid, Allow, Replace
+      duration: "30s"
+    artifactsServiceNetworkDelay:
+      enabled: true
+      schedule:
+        enabled: true
+        cron: "@every 1h"
+        historyLimit: 5
+        concurrencyPolicy: "Forbid"
+      duration: "1m"
+      delay:
+        latency: "200ms"
+        correlation: "50"
+        jitter: "10ms"
+    trainServicePodKill:
+      enabled: false
+      schedule:
+        enabled: true
+        cron: "@every 10m"
+      duration: "30s"
+    coreServiceCpuStress:
+      enabled: false
+      schedule:
+        enabled: true
+        cron: "@every 15m"
+      duration: "2m"
+      cpu:
+        workers: 1
+        load: 100
+    coreArtifactsNetworkPartition:
+      enabled: false
+      schedule:
+        enabled: true
+        cron: "@every 30m"
+      duration: "1m"
+```
 
-Проверка сетевой задержки artifacts-service (NetworkChaos)
+#### Использование Schedule ресурсов
 
-Имитация задержки сети между сервисами
-- kubectl apply -f chaos/artifacts-service-network-delay.yaml
+Все эксперименты используют отдельные ресурсы `Schedule` из Chaos Mesh, что обеспечивает:
+- Независимое управление расписанием от самих экспериментов
+- История запусков (historyLimit)
+- Политики конкурентности (concurrencyPolicy)
+- Возможность просмотра расписаний в Chaos Dashboard
 
-Удаление
-- kubectl delete -f chaos/core-service-pod-kill.yaml
-- kubectl delete -f chaos/artifacts-service-network-delay.yaml
+#### Формат расписания (Cron)
+
+Расписание использует cron-формат. Примеры:
+
+- `@every 5m` - каждые 5 минут
+- `@every 10m` - каждые 10 минут
+- `@every 1h` - каждый час
+- `0 */2 * * *` - каждые 2 часа
+- `0 9 * * *` - каждый день в 9:00
+- `0 9 * * 1-5` - каждый рабочий день в 9:00
+- `0 0 * * 0` - каждое воскресенье в полночь
+
+#### Доступные эксперименты
+
+1. **coreServicePodKill** - Проверка отказоустойчивости core-service
+   - Удаляет один под core-service и проверяет, что он восстановится
+   - По умолчанию: каждые 5 минут
+   - Тип: PodChaos
+
+2. **artifactsServiceNetworkDelay** - Проверка сетевой задержки artifacts-service
+   - Имитация задержки сети между сервисами
+   - По умолчанию: каждый час
+   - Тип: NetworkChaos
+
+3. **trainServicePodKill** - Проверка отказоустойчивости train-service
+   - Удаляет один под train-service и проверяет восстановление
+   - По умолчанию: отключен, при включении - каждые 10 минут
+   - Тип: PodChaos
+
+4. **coreServiceCpuStress** - Нагрузочное тестирование core-service
+   - Создает нагрузку на CPU для проверки поведения под нагрузкой
+   - По умолчанию: отключен, при включении - каждые 15 минут
+   - Тип: StressChaos
+   - Параметры: workers (количество воркеров), load (процент загрузки 0-100)
+
+5. **coreArtifactsNetworkPartition** - Проверка сетевой изоляции
+   - Изолирует сетевую связь между core-service и artifacts-service
+   - По умолчанию: отключен, при включении - каждые 30 минут
+   - Тип: NetworkChaos (partition)
+
+#### Политики конкурентности (concurrencyPolicy)
+
+- **Forbid** (по умолчанию) - запрещает одновременное выполнение нескольких запусков
+- **Allow** - разрешает одновременное выполнение
+- **Replace** - отменяет текущий запуск и начинает новый
+
+#### Ручное управление
+
+Эксперименты с расписанием (Schedule):
+```bash
+# Применить расписание
+kubectl apply -f templates/chaos/core-service-pod-kill-schedule.yaml
+kubectl apply -f templates/chaos/artifacts-service-network-delay-schedule.yaml
+kubectl apply -f templates/chaos/train-service-pod-kill-schedule.yaml
+kubectl apply -f templates/chaos/core-service-cpu-stress-schedule.yaml
+kubectl apply -f templates/chaos/core-artifacts-network-partition-schedule.yaml
+
+# Удалить расписание
+kubectl delete -f templates/chaos/core-service-pod-kill-schedule.yaml
+kubectl delete -f templates/chaos/artifacts-service-network-delay-schedule.yaml
+```
+
+Эксперименты без расписания (для одноразового запуска):
+```bash
+# Применить эксперимент
+kubectl apply -f templates/chaos/core-service-pod-kill.yaml
+kubectl apply -f templates/chaos/artifacts-service-network-delay.yaml
+
+# Удалить эксперимент
+kubectl delete -f templates/chaos/core-service-pod-kill.yaml
+kubectl delete -f templates/chaos/artifacts-service-network-delay.yaml
+```
+
+#### Просмотр расписаний
+
+```bash
+# Список всех расписаний
+kubectl get schedules -n team7-ns
+
+# Детали расписания
+kubectl describe schedule <schedule-name> -n team7-ns
+
+# История запусков
+kubectl get workflow -n team7-ns
+```
+
+#### Отключение расписания
+
+Чтобы отключить автоматический запуск по расписанию, но оставить эксперимент включенным:
+```yaml
+chaos:
+  experiments:
+    coreServicePodKill:
+      enabled: true
+      schedule:
+        enabled: false  # Расписание отключено
+```
+
+#### Отключение всех экспериментов
+
+```yaml
+chaos:
+  enabled: false  # Все эксперименты отключены
+```

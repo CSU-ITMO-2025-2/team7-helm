@@ -1,0 +1,30 @@
+{{- if and .Values.chaos.enabled .Values.chaos.experiments.coreArtifactsNetworkPartition.enabled .Values.chaos.experiments.coreArtifactsNetworkPartition.schedule.enabled }}
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-core-artifacts-network-partition-schedule
+  namespace: {{ .Values.global.namespace }}
+spec:
+  schedule: {{ .Values.chaos.experiments.coreArtifactsNetworkPartition.schedule.cron | quote }}
+  historyLimit: {{ .Values.chaos.experiments.coreArtifactsNetworkPartition.schedule.historyLimit | default 5 }}
+  concurrencyPolicy: {{ .Values.chaos.experiments.coreArtifactsNetworkPartition.schedule.concurrencyPolicy | default "Forbid" }}
+  type: NetworkChaos
+  networkChaos:
+    action: partition
+    mode: all
+    selector:
+      namespaces:
+        - {{ .Values.global.namespace }}
+      labelSelectors:
+        "app.kubernetes.io/component": "core-service"
+    direction: both
+    target:
+      selector:
+        namespaces:
+          - {{ .Values.global.namespace }}
+        labelSelectors:
+          "app.kubernetes.io/component": "artifacts-service"
+      mode: all
+    duration: {{ .Values.chaos.experiments.coreArtifactsNetworkPartition.duration | quote }}
+{{- end }}
+

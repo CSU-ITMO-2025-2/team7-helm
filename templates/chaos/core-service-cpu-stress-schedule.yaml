@@ -1,0 +1,25 @@
+{{- if and .Values.chaos.enabled .Values.chaos.experiments.coreServiceCpuStress.enabled .Values.chaos.experiments.coreServiceCpuStress.schedule.enabled }}
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-core-service-cpu-stress-schedule
+  namespace: {{ .Values.global.namespace }}
+spec:
+  schedule: {{ .Values.chaos.experiments.coreServiceCpuStress.schedule.cron | quote }}
+  historyLimit: {{ .Values.chaos.experiments.coreServiceCpuStress.schedule.historyLimit | default 5 }}
+  concurrencyPolicy: {{ .Values.chaos.experiments.coreServiceCpuStress.schedule.concurrencyPolicy | default "Forbid" }}
+  type: StressChaos
+  stressChaos:
+    mode: one
+    selector:
+      namespaces:
+        - {{ .Values.global.namespace }}
+      labelSelectors:
+        "app.kubernetes.io/component": "core-service"
+    stressors:
+      cpu:
+        workers: {{ .Values.chaos.experiments.coreServiceCpuStress.cpu.workers | default 1 }}
+        load: {{ .Values.chaos.experiments.coreServiceCpuStress.cpu.load | default 100 }}
+    duration: {{ .Values.chaos.experiments.coreServiceCpuStress.duration | quote }}
+{{- end }}
+

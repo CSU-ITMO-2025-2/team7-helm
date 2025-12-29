@@ -1,20 +1,20 @@
+{{- if and .Values.chaos.enabled .Values.chaos.experiments.artifactsServiceNetworkDelay.enabled (not .Values.chaos.experiments.artifactsServiceNetworkDelay.schedule.enabled) }}
 apiVersion: chaos-mesh.org/v1alpha1
 kind: NetworkChaos
 metadata:
   name: {{ include "team7-helm.fullname" . }}-artifacts-service-delay
-  namespace: team7-ns
+  namespace: {{ .Values.global.namespace }}
 spec:
   action: delay
   mode: all
   selector:
     namespaces:
-      - team7-ns
+      - {{ .Values.global.namespace }}
     labelSelectors:
       "app.kubernetes.io/component": "artifacts-service"
   delay:
-    latency: "200ms"
-    correlation: "50"
-    jitter: "10ms"
-  duration: "1m"
-  scheduler:
-    cron: "@every 2m"
+    latency: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.delay.latency | quote }}
+    correlation: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.delay.correlation | quote }}
+    jitter: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.delay.jitter | quote }}
+  duration: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.duration | quote }}
+{{- end }}

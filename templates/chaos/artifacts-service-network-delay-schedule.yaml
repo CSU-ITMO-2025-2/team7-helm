@@ -1,0 +1,26 @@
+{{- if and .Values.chaos.enabled .Values.chaos.experiments.artifactsServiceNetworkDelay.enabled .Values.chaos.experiments.artifactsServiceNetworkDelay.schedule.enabled }}
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: {{ include "team7-helm.fullname" . }}-artifacts-service-delay-schedule
+  namespace: {{ .Values.global.namespace }}
+spec:
+  schedule: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.schedule.cron | quote }}
+  historyLimit: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.schedule.historyLimit | default 5 }}
+  concurrencyPolicy: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.schedule.concurrencyPolicy | default "Forbid" }}
+  type: NetworkChaos
+  networkChaos:
+    action: delay
+    mode: all
+    selector:
+      namespaces:
+        - {{ .Values.global.namespace }}
+      labelSelectors:
+        "app.kubernetes.io/component": "artifacts-service"
+    delay:
+      latency: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.delay.latency | quote }}
+      correlation: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.delay.correlation | quote }}
+      jitter: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.delay.jitter | quote }}
+    duration: {{ .Values.chaos.experiments.artifactsServiceNetworkDelay.duration | quote }}
+{{- end }}
+
