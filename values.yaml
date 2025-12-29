@@ -203,12 +203,7 @@ chaos:
       enabled: true
       schedule:
         enabled: true  # Использует отдельный Schedule ресурс
-        cron: "@every 5m"  # Запуск каждые 5 минут
-        # Примеры других расписаний:
-        # "@every 10m" - каждые 10 минут
-        # "0 */2 * * *" - каждые 2 часа
-        # "0 9 * * *" - каждый день в 9:00
-        # "0 9 * * 1-5" - каждый рабочий день в 9:00
+        cron: "@every 60m"  # Запуск каждые 60 минут
         historyLimit: 5  # Количество сохраняемых запусков в истории
         concurrencyPolicy: "Forbid"  # Forbid, Allow, Replace
       duration: "30s"
@@ -216,7 +211,7 @@ chaos:
       enabled: true
       schedule:
         enabled: true  # Использует отдельный Schedule ресурс
-        cron: "@every 1h"  # Запуск каждый час
+        cron: "@every 60m"  # Запуск каждый час
         historyLimit: 5  # Количество сохраняемых запусков в истории
         concurrencyPolicy: "Forbid"  # Forbid, Allow, Replace
       duration: "1m"
@@ -228,7 +223,7 @@ chaos:
       enabled: false
       schedule:
         enabled: true
-        cron: "@every 10m"  # Запуск каждые 10 минут
+        cron: "@every 60m"  # Запуск каждые 10 минут
         historyLimit: 5
         concurrencyPolicy: "Forbid"
       duration: "30s"
@@ -236,7 +231,7 @@ chaos:
       enabled: false
       schedule:
         enabled: true
-        cron: "@every 15m"  # Запуск каждые 15 минут
+        cron: "@every 60m"  # Запуск каждые 15 минут
         historyLimit: 5
         concurrencyPolicy: "Forbid"
       duration: "2m"
@@ -247,7 +242,7 @@ chaos:
       enabled: false
       schedule:
         enabled: true
-        cron: "@every 30m"  # Запуск каждые 30 минут
+        cron: "@every 60m"  # Запуск каждые 30 минут
         historyLimit: 5
         concurrencyPolicy: "Forbid"
       duration: "1m"
