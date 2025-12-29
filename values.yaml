@@ -231,7 +231,7 @@ chaos:
       enabled: true
       schedule:
         enabled: true
-        cron: "@every 10m"  # Запуск каждые 15 минут
+        cron: "@every 60m"  # Запуск каждые 15 минут
         historyLimit: 5
         concurrencyPolicy: "Forbid"
       duration: "2m"
